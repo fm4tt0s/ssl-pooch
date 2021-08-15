@@ -4,6 +4,7 @@
 ![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg) ![Status](https://img.shields.io/badge/Version-Stable-Green.svg) ![Platform](https://img.shields.io/badge/Platform-linux_ppc64le%20%7C%20linux_64%20%7C%20linux_aarch64%20%7C%20osx_64-lightgray.svg) ![Made-With-bash](https://img.shields.io/badge/Made%20with-Bash-1f425f.svg) ![GPLv3license](https://img.shields.io/badge/License-GPLv3-blue.svg) ![DogSays](https://img.shields.io/badge/Dog%20Says-woof%20woof-blueviolet.svg)
 
 <img src="images/poochie-d.png" width=120 align=left> _"I was working on a flat tax proposal and accidentally made this."_
+<br/>
 
 ## What
 - Check, scrap and monitor SSL certificates
