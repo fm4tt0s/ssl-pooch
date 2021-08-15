@@ -5,6 +5,7 @@
 
 <img src="images/poochie-d.png" width=120 align=left> _"I was working on a flat tax proposal and accidentally made this."_
 <br/>
+---
 
 ## What
 - Check, scrap and monitor SSL certificates
