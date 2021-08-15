@@ -1,15 +1,9 @@
 # ssl-pooch
 ## SSL certificate checker, scrapper, monitor and more...
 
-<style>
-td, th { border: none!important; }
-r { color: Red; }
-</style>
-
 ![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg) ![Status](https://img.shields.io/badge/Version-Stable-Green.svg) ![Platform](https://img.shields.io/badge/Platform-linux_ppc64le%20%7C%20linux_64%20%7C%20linux_aarch64%20%7C%20osx_64-lightgray.svg) ![Made-With-bash](https://img.shields.io/badge/Made%20with-Bash-1f425f.svg) ![GPLv3license](https://img.shields.io/badge/License-GPLv3-blue.svg) ![DogSays](https://img.shields.io/badge/Dog%20Says-woof%20woof-blueviolet.svg)
 
-| <img src="images/poochie-d.png" width=120 align=left> | _"I was working on a flat tax proposal and accidentally made this."_|
-|-|-|
+<img src="images/poochie-d.png" width=120 align=left> _"I was working on a flat tax proposal and accidentally made this."_
 
 ## What
 - Check, scrap and monitor SSL certificates
@@ -169,7 +163,7 @@ google.com 443
 github.com 443
 ```
 
-- \* You can include local files on list using <r>FILE</r> keyword, as:
+- \* You can include local files on list using **FILE** keyword, as:
 ```
 CERT_FILE_PATH FILE
 ```
@@ -194,7 +188,7 @@ google.com:443         | Valid   | Aug 2 2021   | 58
 FILE:Entrust_G2_CA.cer | Valid   | Dec 7 2030   | 3472
 ```
 
-- \*\* As well, you can do exactly the same with <r>URL</r> keyword.
+- \*\* As well, you can do exactly the same with **URL** keyword.
 
 ### Separators
 
@@ -209,7 +203,7 @@ _separator;Local Files
 /home/user/certs/Entrust_G2_CA.cer FILE
 ```
 
-- \* **_separator** must be written as - <r>_separator;HEADER_NAME</r>, example:
+- \* **_separator** must be written as - **_separator;HEADER_NAME**, example:
 ```
 _separator;EXTERNAL SITES
 ```
@@ -220,7 +214,7 @@ _separator;EXTERNAL SITES
 
 ### Alternative Labels
 
-When running against a list, you can opt for an alternative label to be shown instead of default output (host:port, file:FILE, url:URL), just put the label you want before HOST/FILE/URL and split them with a <r>';'</r> (semicolon), like:"
+When running against a list, you can opt for an alternative label to be shown instead of default output (host:port, file:FILE, url:URL), just put the label you want before HOST/FILE/URL and split them with a **';'** (semicolon), like:"
 ```
 GOOGLE;google.com 443
 ```
@@ -233,16 +227,16 @@ GOOGLE           | Valid        | Sep 14 2021  | 67
 ```
 
 - \*\* Note that all info about the endpoint (host/file/url/port) is ommited when alternative label is used.
-- \*\* Alterntive label can <r>NOT</r> have spaces on it.
+- \*\* Alterntive label can **NOT** have spaces on it.
 
 ### Static fields
 
 - \* You can also use static fields on the list file - your own identifiers for example, whatever you need. This is specially useful when you require some 'shape' on a bigger list.
-- \* Static fields are limited to the max of <r>three(3)</r> fields - output starts to get ugly.
+- \* Static fields are limited to the max of **three(3)** fields - output starts to get ugly.
 
 - \* In order to use static fields, you need to define custom variables, as follow:
-    + <r>_custom_static_fields_pos</r> : Where to position the fields on the results as **'begin'** or **'end'**
-    + <r>_custom_static_fields_names</r> : Array containing static fields names to be used on header.
+    + **_custom_static_fields_pos** : Where to position the fields on the results as **'begin'** or **'end'**
+    + **_custom_static_fields_names** : Array containing static fields names to be used on header.
 
 Finally, to have static fields working properly you need to put them on the begging of the line as:
 ```
@@ -260,7 +254,7 @@ App1 Eric_Schmidt Mountain_View google.com 443
 App2 Chris_Wanstrath San_Francisco github.com 443
 ```
 
-Note that static fields and its headers names can <r>NOT</r> have spaces on it. The best you can use is **'_' (underline)** - I could'nt find a way to parse it without issues, hard to test all inputs; the less of evils... Going further and considering above list file, and as stated before, assuming you'd set custom static field variables, position and header names, example:
+Note that static fields and its headers names can **NOT** have spaces on it. The best you can use is **'_' (underline)** - I could'nt find a way to parse it without issues, hard to test all inputs; the less of evils... Going further and considering above list file, and as stated before, assuming you'd set custom static field variables, position and header names, example:
 ```
 _custom_static_fields_pos="begin"
 _custom_static_fields_names=("Id" "Chairman" "Headquarters")
@@ -395,56 +389,56 @@ $ ./ssl-pooch.sh -s google.com -tjson
 ```
 
 ### cw
-AWS CloudWatch PutMetric \- \*custom var <r>_custom_cw_namespace</r> must be set
+AWS CloudWatch PutMetric \- \*custom var **_custom_cw_namespace** must be set
 ```bash
 $ ./ssl-pooch.sh -s google.com -tcw  
 aws cloudwatch put-metric-data --metric-name "google.com" --dimensions "URL=google.com,Status=Valid" --namespace "SSL Monitoring" --value "57" --unit "days" --timestamp 1623017695
 ```
 
-<r>_custom_cw_namespace</r> should have CM namespace, example:
+**_custom_cw_namespace** should have CM namespace, example:
 ```
 _custom_cw_namespace="SSL Monitoring"
 ```
 
 ### wily
-CA Wily Introscope metric \- \*custom var <r>_custom_wily_metric_path</r> must be set
+CA Wily Introscope metric \- \*custom var **_custom_wily_metric_path** must be set
 ```bash
 $ ./ssl-pooch.sh -s google.com -twily
 <metric type="IntCounter" name="Infrastructure|fmattos|SSL:google.com" value="57" />
 ```
 
-<r>_custom_wily_metric_path</r> is meant for metric path within Wily's tree, example:
+**_custom_wily_metric_path** is meant for metric path within Wily's tree, example:
 ```
 _custom_wily_metric_path="Infrastructure|$(hostname -s)|SSL:"
 ```
 
 ### dxapm
-Broadcom DX APM metric \- \*custom var <r>_custom_dxapm_metricset</r> must be set
+Broadcom DX APM metric \- \*custom var **_custom_dxapm_metricset** must be set
 ```bash
 $ ./ssl-pooch.sh -s google.com -tdxapm
 { "agent" : "Infrastructure", "host" : "fmattos", "metrics" : [ { "name" : "SSL|Validity:Days", "type" : "IntCounter", "value" : "57" },{ "name" : "SSL|Validity:Status", "type" : "IntCounter", "value" : "0" } ] }
 ```
 
-<r>_custom_dxapm_metricset</r> must be set to: metric tree name AND metric node. Example:
+**_custom_dxapm_metricset** must be set to: metric tree name AND metric node. Example:
 ```
 _custom_dxapm_metricset=("Infrastructure" "SSL|Validity")
 ```
 
 ### statsd
-Statds metric, suitable for DataDog and Influx \- \*custom var <r>_custom_statsd_metric_name</r> must be set
+Statds metric, suitable for DataDog and Influx \- \*custom var **_custom_statsd_metric_name** must be set
 ```bash
 $ ./ssl-pooch.sh -s google.com -tstatsd
 ssl.certificate,endpoint=google.com:57|g
 ```
-<r>_custom_statsd_metric_name</r> holds the metric name, example:
+**_custom_statsd_metric_name** holds the metric name, example:
 ```
 _custom_statsd_metric_name="ssl.certificate,endpoint"
 ```
 
 ### prometheus
-Prometheus metric \- \*custom var <r>_custom_prometheus_metricset</r> must be set
+Prometheus metric \- \*custom var **_custom_prometheus_metricset** must be set
 
-<r>_custom_prometheus_metricset</r> variable should be set as: include metadata (true/false) AND metric name AND label name, example:
+**_custom_prometheus_metricset** variable should be set as: include metadata (true/false) AND metric name AND label name, example:
 ```
 _custom_prometheus_metricset=("true" "ssl_certificate_validation" "endpoint")
 ```
@@ -462,25 +456,25 @@ ssl_certificate_validation{endpoint="google.com"} 57 1623171994
 ```
 
 ### graphite
-Graphite metric \- \*custom var <r>_custom_graphite_metric_name</r> must be set
+Graphite metric \- \*custom var **_custom_graphite_metric_name** must be set
 ```bash
 $ ./ssl-pooch.sh -s google.com -tgraphite
 infrastructure.ssl.certificate.days.google_com 57 1623018363
 ```
 
-<r>_custom_graphite_metric_name</r> is the Graphite metric name, like:
+**_custom_graphite_metric_name** is the Graphite metric name, like:
 ```
 _custom_graphite_metric_name="infrastructure.ssl.certificate.days"
 ```
 
 ### esapm
-ElasticSearch APM metric \- \*custom var <r>_custom_esapm_metricset</r> must be set
+ElasticSearch APM metric \- \*custom var **_custom_esapm_metricset** must be set
 ```bash
 $ ./ssl-pooch.sh -s google.com -tesapm   
 { "metricset" : { "tags" : { "infrastructure" : "ssl", "status" : "Valid" }, "timestamp" : "1623018377",  "samples" : { "days.google_com" : { "value" : "57" } } } }
 ```
 
-<r>_custom_esapm_metricset</r> has the values of: master_label AND sample name, example:
+**_custom_esapm_metricset** has the values of: master_label AND sample name, example:
 ```
 _custom_esapm_metricset=("infrastructure" "ssl")
 ```
@@ -543,12 +537,12 @@ google.com:443  | Valid  | Aug 2 2021  | 57
 ```
 
 - \* Custom variables must be set, as follow:
-    + <r>_custom_mail_to</r> : recipient's email/s. split multiple emails with commas, as: mail1,mail2
-    + <r>_custom_mail_from</r> : sender's email \* defaults to sslpooch@domain.com
-    + <r>_custom_mail_subject</r> : email subject
+    + **_custom_mail_to** : recipient's email/s. split multiple emails with commas, as: mail1,mail2
+    + **_custom_mail_from** : sender's email \* defaults to sslpooch@domain.com
+    + **_custom_mail_subject** : email subject
 
 - \* Did I say it **not quite** depends on sendmail? Yep. You can use **telnet** instead, obviously, assuming your mailhost can reply to EHLOs. If you want to use telnet for sending emails instead, you gotta set an additional custom variable:
-    + <r>_custom_mail_usealtmechanism</r> : settings for alternative telnet email mechanism; must have true|false, domain.com, mailhost_addr, mailhost_port
+    + **_custom_mail_usealtmechanism** : settings for alternative telnet email mechanism; must have true|false, domain.com, mailhost_addr, mailhost_port
     
 Whatever it's first element is set to **true**, it will choose telnet for sending emails. Ex:
 ```
@@ -587,8 +581,8 @@ Export the endpoint certificate to **PWD/cert_files**
 ```
 
 - \* Custom variables must be set, as follow:
-    + <r>_custom_instrumentation_addr</r> : instrumentation endpoint server/URL
-    + <r>_custom_instrumentation_cmd</r> : command to be used for metric injection" 
+    + **_custom_instrumentation_addr** : instrumentation endpoint server/URL
+    + **_custom_instrumentation_cmd** : command to be used for metric injection" 
 
 Example:
 ```
@@ -641,49 +635,49 @@ google.com:443 (local)  | Valid   | Oct 4 2021  | 50
 Listing all of them et their meaning... 
 
 ### Common
-- <r>_warning_notice</r>    : how many days should be considered warning? anything less than this set will be seen as a warning; set to 30 by default.
-- <r>_openssl_proxy</r>     : HTTP proxy to be used with OpenSSL \* when available to OpenSSL (v2.0+)
+- **_warning_notice**    : how many days should be considered warning? anything less than this set will be seen as a warning; set to 30 by default.
+- **_openssl_proxy**     : HTTP proxy to be used with OpenSSL \* when available to OpenSSL (v2.0+)
     + setting _openssl_proxy will make all calls run over the proxy
     + if empty, will use ENV ALL_PROXY if available; and finally ignore if it's not set
     + when proxy is set, discovery is skipped and all hosts are treated as live"
-- <r>_seek_local_certs</r>  : whether to seek or not for local certs when [endpoint is unreacheable](#Stamin-for-unreachable-endpoints) should be true or false
-- <r>_local_certs_path</r> : where to seek for local files
+- **_seek_local_certs**  : whether to seek or not for local certs when [endpoint is unreacheable](#Stamin-for-unreachable-endpoints) should be true or false
+- **_local_certs_path** : where to seek for local files
 
 ### Email Variables
-- <r>_custom_mail_usealtmechanism</r>   : use alternative email mechanism thru telnet? if not set, sendmail will be used. to be considered, this var should be set as: "true|false" "domain" "mailhost_addr" "mailhost_port" - obviously only considered if first element is 'true'
-- <r>_custom_mail_to</r>    : recipient's email/s. split multi-addr with commas, as: addr1,addr2.
-- <r>_custom_mail_from</r>  : sender's email  
-- <r>_custom_mail_from_return_path</r>  : use different return path or reply-to?
-- <r>_custom_mail_subject   : email subject
-- <r>_custom_mail_signature : email signature - must use HTML escaped code, example:
+- **_custom_mail_usealtmechanism**   : use alternative email mechanism thru telnet? if not set, sendmail will be used. to be considered, this var should be set as: "true|false" "domain" "mailhost_addr" "mailhost_port" - obviously only considered if first element is 'true'
+- **_custom_mail_to**    : recipient's email/s. split multi-addr with commas, as: addr1,addr2.
+- **_custom_mail_from**  : sender's email  
+- **_custom_mail_from_return_path**  : use different return path or reply-to?
+- **_custom_mail_subject   : email subject
+- **_custom_mail_signature : email signature - must use HTML escaped code, example:
 ```
 _custom_mail_signature="<p><span style=\"signature\">A Rocksome SSL Monitoring Tool</span></p>"
 ```
-- <r>custom_html_style</r>  : custom email stylesheet for HTML emails - must use HTML escaped code
+- **custom_html_style**  : custom email stylesheet for HTML emails - must use HTML escaped code
 
 ### Output Specic Variables
-- <r>_custom_static_fields_pos</r>  : where to position static fields 'begin' OR 'end' of the line
-- <r>_custom_static_fields_names</r>: static fields names to be used on headers
-- <r>_custom_wily_metric_path</r>   : CA WILY - apm metric path - to be used with correlated output
-- <r>_custom_dxapm_metricset</r>    : DX APM - DX apm metric set as: agent, metric tree name, metric node
-- <r>_custom_cw_namespace</r>       : AWS CLOUDWATCH - cw namespace
-- <r>_custom_statsd_metric_name</r> : STATSD - statsd metric name
-- <r>_custom_graphite_metric_name</r>   : GRAPHITE - graphite metric name
-- <r>_custom_esapm_metricset</r>    : ELASTICSEARCH APM - elasticsearch set as: master_label, sample name
-- <r>_custom_prometheus_metricset</r>   : PROMETHEUS - metricset like - include metadata (true/false), metric name, label name
+- **_custom_static_fields_pos**  : where to position static fields 'begin' OR 'end' of the line
+- **_custom_static_fields_names**: static fields names to be used on headers
+- **_custom_wily_metric_path**   : CA WILY - apm metric path - to be used with correlated output
+- **_custom_dxapm_metricset**    : DX APM - DX apm metric set as: agent, metric tree name, metric node
+- **_custom_cw_namespace**       : AWS CLOUDWATCH - cw namespace
+- **_custom_statsd_metric_name** : STATSD - statsd metric name
+- **_custom_graphite_metric_name**   : GRAPHITE - graphite metric name
+- **_custom_esapm_metricset**    : ELASTICSEARCH APM - elasticsearch set as: master_label, sample name
+- **_custom_prometheus_metricset**   : PROMETHEUS - metricset like - include metadata (true/false), metric name, label name
 
 ### Instrumentation Endpoint 
-- <r>_custom_instrumentation_addr</r>   : instrumentation endpoint URL
-- <r>_custom_instrumentation_cmd</r>    : send method and command
+- **_custom_instrumentation_addr**   : instrumentation endpoint URL
+- **_custom_instrumentation_cmd**    : send method and command
 
 ## Exit codes
-| 0 | : | mellow, clean/normal exit |
-|-|-|-|
-| 3 | : | missing dependency/var not set |
-| 5 | : | malformed command |
-| 8 | : | interrupted, INT caught |
-| 13 | : | input/output/file error |
-| 15 | : | FQDN file list related error |
+| 0 | mellow, clean/normal exit |
+|-|-|
+| 3 | missing dependency/var not set |
+| 5 | malformed command |
+| 8 | interrupted, INT caught |
+| 13 | input/output/file error |
+| 15 | FQDN file list related error |
 
 ## Requires
 - bash v3+
