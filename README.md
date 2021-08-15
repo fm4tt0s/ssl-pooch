@@ -3,8 +3,9 @@
 
 ![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg) ![Status](https://img.shields.io/badge/Version-Stable-Green.svg) ![Platform](https://img.shields.io/badge/Platform-linux_ppc64le%20%7C%20linux_64%20%7C%20linux_aarch64%20%7C%20osx_64-lightgray.svg) ![Made-With-bash](https://img.shields.io/badge/Made%20with-Bash-1f425f.svg) ![GPLv3license](https://img.shields.io/badge/License-GPLv3-blue.svg) ![DogSays](https://img.shields.io/badge/Dog%20Says-woof%20woof-blueviolet.svg)
 
-<img src="images/poochie-d.png" width=120 align=left> _"I was working on a flat tax proposal and accidentally made this."_
-<br/>
+<img src="images/poochie-d.png" width=120 align=left>
+_"I was working on a flat tax proposal and accidentally made this."_\
+\
 ---
 
 ## What
@@ -62,7 +63,7 @@
 * [References](#References)
 
 ## Usage
-```bash
+```
 $ ./ssl-pooch.sh -h
 
 ssl-pooch (woof-woof) v1.0
@@ -85,7 +86,7 @@ Check out all available configs at [Custom Configs](#Custom-Configs) section.
 
 ## Moooore (aka manual)
 ## REMOTE HOST
-```bash
+```
 $ ./ssl-pooch.sh -s HOST -p PORT
 ```
 
@@ -96,14 +97,14 @@ $ ./ssl-pooch.sh -s HOST -p PORT
 ```
 
 ### Example
-```bash
+```
 $ ./ssl-pooch.sh -s google.com -p 443
 Host            | Status  | Expires     | Days
 google.com:443  | Valid   | Aug 2 2021  | 58
 ```
 
 ## LOCAL FILE
-```bash
+```
 $ ./ssl-pooch.sh -f LOCAL_CERTIFICATE_FILE
 ```
 
@@ -115,20 +116,20 @@ $ ./ssl-pooch.sh -f LOCAL_CERTIFICATE_FILE
 - \* PEM certificates and SAML IdP Metadata XML Certificates (probably only useful to me) supported.
 
 ### Example #1 (PEM file)
-```bash
+```
 $ ./ssl-pooch.sh -f ~/Certs/Entrust_G2_CA.cer
 Host                    | Status  | Expires     | Days
 FILE:Entrust_G2_CA.cer  | Valid   | Dec 7 2030  | 3472
 ```
 ### Example #2 (SAML IdP Metadata XML)
-```bash
+```
 $ ./ssl-pooch.sh -f sp-gst-stage-metadata.xml 
 Host                            | Status  | Expires      | Days
 FILE:sp-fed-proxy-metadata.xml  | Valid   | Jun 12 2031  | 3648
 ```
 
 ## RESOURCE URL
-```bash
+```
 $ ./ssl-pooch.sh -u RESOURCE_URL
 ```
 
@@ -140,14 +141,14 @@ $ ./ssl-pooch.sh -u RESOURCE_URL
 - \* PEM certificates and SAML IdP Metadata XML Certificates (probably only useful to me) supported.
 
 ### Example
-```bash
+```
 $ ./ssl-pooch.sh -u http://mysite.com/download/certfile.cer
 Host                                    | Status    | Expires       | Days
 URL:mysite.com/download/certfile.cer    | Valid     | Jun 20 2031   | 3650
 ```
 
 ## LIST
-```bash
+```
 $ ./ssl-pooch.sh -l FQDN_LIST_FILE [-o(n)|-F(-)]
 ```
 
@@ -183,7 +184,7 @@ google.com 443
 ```
 
 Results will be:
-```bash
+```
 $ ./ssl-pooch.sh -l list
 Host                   | Status  | Expires      | Days
 google.com:443         | Valid   | Aug 2 2021   | 58
@@ -222,7 +223,7 @@ GOOGLE;google.com 443
 ```
 
 Results will be shown as:
-```bash
+```
 $ ./ssl-pooch.sh -l list
 Host             | Status       | Expires      | Days
 GOOGLE           | Valid        | Sep 14 2021  | 67
@@ -263,7 +264,7 @@ _custom_static_fields_names=("Id" "Chairman" "Headquarters")
 ```
 
 Finally, using said list, you get:
-```bash
+```
 $ ./ssl-pooch.sh -l list
 Id    | Chairman        | Headquarters    | Host            | Status  | Expires      | Days
 App1  | Eric_Schmidt    | Mountain_View   | google.com:443  | Valid   | Aug 2 2021   | 58
@@ -309,7 +310,7 @@ Applies to any column or value, example:
 ### Accepted values are
 ### tty
 Pretty console \*default
-```bash
+```
 $ ./ssl-pooch.sh -s google.com
 Host            | Status  | Expires     | Days
 google.com:443  | Valid   | Aug 2 2021  | 58
@@ -317,7 +318,7 @@ google.com:443  | Valid   | Aug 2 2021  | 58
 
 ### csv
 Delimiters gonna rule and delimit
-```bash
+```
 $ ./ssl-pooch.sh -s google.com -tcsv
 Host;Status;Expires;Days
 google.com:443;Valid;Aug 2 2021;57
@@ -325,7 +326,7 @@ google.com:443;Valid;Aug 2 2021;57
 
 ### html
 Eich tee eme ell. Lynx? Netscape?
-```bash
+```
 $ ./ssl-pooch.sh -s google.com -thtml
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd"><html><head><title>ssl-pooch</title>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
@@ -385,14 +386,14 @@ $ ./ssl-pooch.sh -s google.com -thtml
 
 ### json
 Get your gollie mask on! RFC 8559 compliant JSON
-```bash
+```
 $ ./ssl-pooch.sh -s google.com -tjson
 [   { "Host" : "google.com:443","Status" : "Valid","Expires" : "Aug 2 2021","Days" : "57" }   ]
 ```
 
 ### cw
 AWS CloudWatch PutMetric \- \*custom var **_custom_cw_namespace** must be set
-```bash
+```
 $ ./ssl-pooch.sh -s google.com -tcw  
 aws cloudwatch put-metric-data --metric-name "google.com" --dimensions "URL=google.com,Status=Valid" --namespace "SSL Monitoring" --value "57" --unit "days" --timestamp 1623017695
 ```
@@ -404,7 +405,7 @@ _custom_cw_namespace="SSL Monitoring"
 
 ### wily
 CA Wily Introscope metric \- \*custom var **_custom_wily_metric_path** must be set
-```bash
+```
 $ ./ssl-pooch.sh -s google.com -twily
 <metric type="IntCounter" name="Infrastructure|fmattos|SSL:google.com" value="57" />
 ```
@@ -416,7 +417,7 @@ _custom_wily_metric_path="Infrastructure|$(hostname -s)|SSL:"
 
 ### dxapm
 Broadcom DX APM metric \- \*custom var **_custom_dxapm_metricset** must be set
-```bash
+```
 $ ./ssl-pooch.sh -s google.com -tdxapm
 { "agent" : "Infrastructure", "host" : "fmattos", "metrics" : [ { "name" : "SSL|Validity:Days", "type" : "IntCounter", "value" : "57" },{ "name" : "SSL|Validity:Status", "type" : "IntCounter", "value" : "0" } ] }
 ```
@@ -428,7 +429,7 @@ _custom_dxapm_metricset=("Infrastructure" "SSL|Validity")
 
 ### statsd
 Statds metric, suitable for DataDog and Influx \- \*custom var **_custom_statsd_metric_name** must be set
-```bash
+```
 $ ./ssl-pooch.sh -s google.com -tstatsd
 ssl.certificate,endpoint=google.com:57|g
 ```
@@ -445,21 +446,21 @@ Prometheus metric \- \*custom var **_custom_prometheus_metricset** must be set
 _custom_prometheus_metricset=("true" "ssl_certificate_validation" "endpoint")
 ```
 
-```bash
+```
 $ ./ssl-pooch.sh -s google.com -tprometheus
 # HELP ssl_certificate_validation SSL Certificates Days To Expiration
 # TYPE ssl_certificate_validation gauge
 ssl_certificate_validation{endpoint="google.com"} 57 1623171994
 ```
 ...or without metadata header, depending on the metricset value
-```bash
+```
 $ ./ssl-pooch.sh -s google.com -tprometheus
 ssl_certificate_validation{endpoint="google.com"} 57 1623171994
 ```
 
 ### graphite
 Graphite metric \- \*custom var **_custom_graphite_metric_name** must be set
-```bash
+```
 $ ./ssl-pooch.sh -s google.com -tgraphite
 infrastructure.ssl.certificate.days.google_com 57 1623018363
 ```
@@ -471,7 +472,7 @@ _custom_graphite_metric_name="infrastructure.ssl.certificate.days"
 
 ### esapm
 ElasticSearch APM metric \- \*custom var **_custom_esapm_metricset** must be set
-```bash
+```
 $ ./ssl-pooch.sh -s google.com -tesapm   
 { "metricset" : { "tags" : { "infrastructure" : "ssl", "status" : "Valid" }, "timestamp" : "1623018377",  "samples" : { "days.google_com" : { "value" : "57" } } } }
 ```
@@ -493,14 +494,14 @@ _custom_esapm_metricset=("infrastructure" "ssl")
 - serial : Certificate serial
 
 ### Use one argument or any combination of them, separated by commas, like:
-```bash
+```
 ./ssl-pooch.sh -s google.com -ecn
 ./ssl-pooch.sh -s google.com -ecn,serial
 ./ssl-pooch.sh -s google.com -ecn,serial,issuer
 ```
 
 ### Example
-```bash
+```
 $ ./ssl-pooch.sh -s google.com -ecn,serial,issuer
 Host            | Issuer  | CNAME         | Serial                            | Status  | Expires     | Days
 google.com:443  | GTS     | *.google.com  | BFF10D86136F613D0300000000CC17DE  | Valid   | Aug 2 2021  | 57
@@ -512,7 +513,7 @@ google.com:443  | GTS     | *.google.com  | BFF10D86136F613D0300000000CC17DE  | 
 ```
 
 ### Example
-```bash
+```
 $ ./ssl-pooch.sh -s github.com -S
 Host                                                 | Status  | Expires      | Days
 github.com:443 (DNS:github.com, DNS:www.github.com)  | Valid   | Mar 30 2022  | 248
@@ -524,7 +525,7 @@ github.com:443 (DNS:github.com, DNS:www.github.com)  | Valid   | Mar 30 2022  | 
 ```
 
 ### Example
-```bash
+```
 $ ./ssl-pooch.sh -s google.com -n
 google.com:443  | Valid  | Aug 2 2021  | 57
 ```
@@ -557,7 +558,7 @@ _custom_mail_usealtmechanism=("true" "company.com" "mailhost.company.com" "25")
 ```
 
 ### Example
-```bash
+```
 $ ./ssl-pooch.sh -s google.com -O results
 $ cat results
 Host            | Status  | Expires     | Days
@@ -598,7 +599,7 @@ _custom_instrumentation_cmd="curl --silent -i -H \"Content-type: application/jso
 ```
 
 ### Example
-```bash
+```
 $ ./ssl-pooch.sh -x
 ++ command -v true
 + _rm_cmd=true
@@ -626,7 +627,7 @@ There is a 'pseudo retry' function for whenever an endpoint is found unrechable,
     + local file should be named: **google.com_files_certificates_file.cert**
 
 If that happens, endpoint unreachable AND _seek_local_certs is 'true' AND correlated file found on _local_certs_path, a notation as 'local' will be placed on the line to indicate date was pull from a local file, example:"
-```bash
+```
 $ ./ssl-pooch.sh -s google.com
 Host                    | Status  | Expires     | Days
 google.com:443 (local)  | Valid   | Oct 4 2021  | 50
