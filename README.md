@@ -14,6 +14,7 @@
 - Generate several output types <small>(CSV, HTML, JSON, AWS CloudWatch, CA Wily Introscope, Broadcom DXAPM, StatsD (DataDog/Influx), Prometheus and ElasicSearch APM... so far.)</small>
 - Send results by email
 - Inject results to instrumentation endpoint
+- Ship with Docker
 - Bark!
 
 ---
@@ -56,6 +57,7 @@
 * [Custom Configs](#Custom-Configs)
 * [Exit codes](#Exit-codes)
 * [Requires](#Requires)
+* [Run with Docker](#Run-with-Docker)
 * [Tested on](#Tested-on)
 * [Todo](#Todo)
 * [Bugs](#Bugs)
@@ -113,7 +115,7 @@ $ ./ssl-pooch.sh -f LOCAL_CERTIFICATE_FILE
 -f    : Local certificate file path
 ```
 
-\* PEM certificates and SAML IdP Metadata XML Certificates (probably only useful to me) supported.
+- PEM certificates and SAML IdP Metadata XML Certificates (this last one is probably only useful to me) are supported.
 
 ### Example #1 (PEM file)
 ```
@@ -138,7 +140,7 @@ $ ./ssl-pooch.sh -u RESOURCE_URL
 -u    : Resource URL to download the cert from
 ```
 
-\* PEM certificates and SAML IdP Metadata XML Certificates (probably only useful to me) supported.
+- PEM certificates and SAML IdP Metadata XML Certificates (this last one is probably only useful to me) are supported.
 
 ### Example
 ```
@@ -152,7 +154,7 @@ URL:mysite.com/download/certfile.cer    | Valid     | Jun 20 2031   | 3650
 $ ./ssl-pooch.sh -l FQDN_LIST_FILE [-o(n)|-F(-)]
 ```
 
-\* **NOTE**: Execution may look hang when running with a bigger list file, it's not. This is just like bankruptcy law... Don't worry about it. I got this! In case you've have trust issues you can use a (progress bar)[#Show-progress-bar-when-running-over-a-list] to see where this is going.
+- **NOTE**: Execution may look hang when running with a bigger list file, it's not. This is just like bankruptcy law... Don't worry about it. I got this! In case you've have trust issues you can use a [progress bar](#Show-progress-bar-when-running-over-a-list) to see where things are going.
 
 ### Where
 ```
@@ -166,7 +168,7 @@ google.com 443
 github.com 443
 ```
 
-\* You can include local files on list using **FILE** keyword, as:
+- You can include local files on list using **FILE** keyword, as:
 ```
 CERT_FILE_PATH FILE
 ```
@@ -191,7 +193,7 @@ google.com:443         | Valid   | Aug 2 2021   | 58
 FILE:Entrust_G2_CA.cer | Valid   | Dec 7 2030   | 3472
 ```
 
-\* As well, you can do exactly the same with **URL** keyword.
+- As well, you can do exactly the same with **URL** keyword to include it on a list.
 
 ### Separators
 
@@ -206,7 +208,7 @@ _separator;Local Files
 /home/user/certs/Entrust_G2_CA.cer FILE
 ```
 
-\* **_separator** must be written as - **_separator;HEADER_NAME**, example:
+- **_separator** must be written as - **_separator;HEADER_NAME**, example:
 ```
 _separator;EXTERNAL SITES
 ```
@@ -229,15 +231,15 @@ Host             | Status       | Expires      | Days
 GOOGLE           | Valid        | Sep 14 2021  | 67
 ```
 
-- \*\* Note that all info about the endpoint (host/file/url/port) is ommited when alternative label is used.
-- \*\* Alterntive label can **NOT** have spaces on it.
+- Note that all info about the endpoint (host/file/url/port) is ommited when alternative label is used.
+- Alterntive label can **NOT** have spaces on it.
 
 ### Static fields
 
-\* You can also use static fields on the list file - your own identifiers for example, whatever you need. This is specially useful when you require some 'shape' on a bigger list.
-\* Static fields are limited to the max of **three(3)** fields - output starts to get ugly.
+- You can also use static fields on the list file - your own identifiers for example, whatever you need. This is specially useful when you require some 'shape' on a bigger list.
+- Static fields are limited to the max of **three(3)** fields - output starts to get ugly.
 
-\* In order to use static fields, you need to define custom variables, as follow:
+- In order to use static fields, you need to define custom variables, as follow:
     + **_custom_static_fields_pos** : Where to position the fields on the results as **'begin'** or **'end'**
     + **_custom_static_fields_names** : Array containing static fields names to be used on header.
 
@@ -286,8 +288,8 @@ You can also order by two columns, like - order by column A then by column B, ex
 -or1,4  : Sort results in reverse order column number 2, then by column number 4
 ```
 
-\* Ignored depending on the output type
-\* Ignored if specified column number is out of bounds, example: used '6' on a run that yields a '5' columns output.
+- Ignored depending on the output type
+- Ignored if specified column number is out of bounds, example: used '6' on a run that yields a '5' columns output.
 
 ### Filter results
 ```
@@ -392,56 +394,56 @@ $ ./ssl-pooch.sh -s google.com -tjson
 ```
 
 ### cw
-AWS CloudWatch PutMetric \- \*custom var **_custom_cw_namespace** must be set
+AWS CloudWatch PutMetric custom var **_custom_cw_namespace** must be set
 ```
 $ ./ssl-pooch.sh -s google.com -tcw  
 aws cloudwatch put-metric-data --metric-name "google.com" --dimensions "URL=google.com,Status=Valid" --namespace "SSL Monitoring" --value "57" --unit "days" --timestamp 1623017695
 ```
 
-**_custom_cw_namespace** should have CM namespace, example:
+- **_custom_cw_namespace** should have CM namespace, example:
 ```
 _custom_cw_namespace="SSL Monitoring"
 ```
 
 ### wily
-CA Wily Introscope metric \- \*custom var **_custom_wily_metric_path** must be set
+CA Wily Introscope metric custom var **_custom_wily_metric_path** must be set
 ```
 $ ./ssl-pooch.sh -s google.com -twily
 <metric type="IntCounter" name="Infrastructure|fmattos|SSL:google.com" value="57" />
 ```
 
-**_custom_wily_metric_path** is meant for metric path within Wily's tree, example:
+- **_custom_wily_metric_path** is meant for metric path within Wily's tree, example:
 ```
 _custom_wily_metric_path="Infrastructure|$(hostname -s)|SSL:"
 ```
 
 ### dxapm
-Broadcom DX APM metric \- \*custom var **_custom_dxapm_metricset** must be set
+Broadcom DX APM metric custom var **_custom_dxapm_metricset** must be set
 ```
 $ ./ssl-pooch.sh -s google.com -tdxapm
 { "agent" : "Infrastructure", "host" : "fmattos", "metrics" : [ { "name" : "SSL|Validity:Days", "type" : "IntCounter", "value" : "57" },{ "name" : "SSL|Validity:Status", "type" : "IntCounter", "value" : "0" } ] }
 ```
 
-**_custom_dxapm_metricset** must be set to: metric tree name AND metric node. Example:
+- **_custom_dxapm_metricset** must be set to: metric tree name AND metric node. Example:
 ```
 _custom_dxapm_metricset=("Infrastructure" "SSL|Validity")
 ```
 
 ### statsd
-Statds metric, suitable for DataDog and Influx \- \*custom var **_custom_statsd_metric_name** must be set
+Statds metric, suitable for DataDog and Influx custom var **_custom_statsd_metric_name** must be set
 ```
 $ ./ssl-pooch.sh -s google.com -tstatsd
 ssl.certificate,endpoint=google.com:57|g
 ```
-**_custom_statsd_metric_name** holds the metric name, example:
+- **_custom_statsd_metric_name** holds the metric name, example:
 ```
 _custom_statsd_metric_name="ssl.certificate,endpoint"
 ```
 
 ### prometheus
-Prometheus metric \- \*custom var **_custom_prometheus_metricset** must be set
+Prometheus metric custom var **_custom_prometheus_metricset** must be set
 
-**_custom_prometheus_metricset** variable should be set as: include metadata (true/false) AND metric name AND label name, example:
+- **_custom_prometheus_metricset** variable should be set as: include metadata (true/false) AND metric name AND label name, example:
 ```
 _custom_prometheus_metricset=("true" "ssl_certificate_validation" "endpoint")
 ```
@@ -459,25 +461,25 @@ ssl_certificate_validation{endpoint="google.com"} 57 1623171994
 ```
 
 ### graphite
-Graphite metric \- \*custom var **_custom_graphite_metric_name** must be set
+Graphite metric custom var **_custom_graphite_metric_name** must be set
 ```
 $ ./ssl-pooch.sh -s google.com -tgraphite
 infrastructure.ssl.certificate.days.google_com 57 1623018363
 ```
 
-**_custom_graphite_metric_name** is the Graphite metric name, like:
+- **_custom_graphite_metric_name** is the Graphite metric name, like:
 ```
 _custom_graphite_metric_name="infrastructure.ssl.certificate.days"
 ```
 
 ### esapm
-ElasticSearch APM metric \- \*custom var **_custom_esapm_metricset** must be set
+ElasticSearch APM metric custom var **_custom_esapm_metricset** must be set
 ```
 $ ./ssl-pooch.sh -s google.com -tesapm   
 { "metricset" : { "tags" : { "infrastructure" : "ssl", "status" : "Valid" }, "timestamp" : "1623018377",  "samples" : { "days.google_com" : { "value" : "57" } } } }
 ```
 
-**_custom_esapm_metricset** has the values of: master_label AND sample name, example:
+- **_custom_esapm_metricset** has the values of: master_label AND sample name, example:
 ```
 _custom_esapm_metricset=("infrastructure" "ssl")
 ```
@@ -509,7 +511,7 @@ google.com:443  | GTS     | *.google.com  | BFF10D86136F613D0300000000CC17DE  | 
 
 ### Certificate SANs
 ```
--S      : Show certificate SANs, if any (output may get very ugly)
+-S      : Show certificate SANs, if any (output may get VERY ugly)
 ```
 
 ### Example
@@ -534,20 +536,20 @@ google.com:443  | Valid  | Aug 2 2021  | 57
 
 ### Send results by email
 
-\* Depends on **sendmail** (not quite, but yest)
+- Depends on **sendmail** (not quite, but yes)
 ```
 -m     : Send results by email
 ```
 
-\* Custom variables must be set, as follow:
+- Custom variables must be set, as follow:
     + **_custom_mail_to** : recipient's email/s. split multiple emails with commas, as: mail1,mail2
-    + **_custom_mail_from** : sender's email \* defaults to sslpooch@domain.com
+    + **_custom_mail_from** : sender's email
     + **_custom_mail_subject** : email subject
 
-\* Did I say it **not quite** depends on sendmail? Yep. You can use **telnet** instead, obviously, assuming your mailhost can reply to EHLOs. If you want to use telnet for sending emails instead, you gotta set an additional custom variable:
+- Did I say it **not quite** depends on sendmail? Yep. You can use **telnet** instead, obviously, assuming your mailhost can reply to EHLOs. If you want to use telnet for sending emails, you gotta set an additional custom variable:
     + **_custom_mail_usealtmechanism** : settings for alternative telnet email mechanism; must have true|false, domain.com, mailhost_addr, mailhost_port
     
-Whatever it's first element is set to **true**, it will choose telnet for sending emails. Ex:
+When it's first element is set to **true**, it will choose telnet for sending emails. Ex:
 ```
 _custom_mail_usealtmechanism=("true" "company.com" "mailhost.company.com" "25")
 ```
@@ -571,9 +573,12 @@ google.com:443  | Valid   | Aug 2 2021  | 56
 ```
 
 Export the endpoint certificate to **PWD/cert_files**
-\* This is only valid when running against server or URL
+- This is only valid when running against server or URL
 
 ### Show progress bar when running over a list
+
+Meh is it running? I wanna seeeee it...
+
 ```
 -P      : Show progress bar when running over a list
 ```
@@ -583,7 +588,7 @@ Export the endpoint certificate to **PWD/cert_files**
 -i     : Send results to instrumentation endpoint
 ```
 
-\* Custom variables must be set, as follow:
+- Custom variables must be set, as follow:
     + **_custom_instrumentation_addr** : instrumentation endpoint server/URL
     + **_custom_instrumentation_cmd** : command to be used for metric injection" 
 
@@ -606,7 +611,7 @@ $ ./ssl-pooch.sh -x
 ... [continues]
 ```
 
-**All temporary files are left behind when '-x' is used, they can be useful.**
+- All temporary files are left behind when '-x' is used, they can be useful.
 
 ### Show version
 ```
@@ -617,16 +622,18 @@ $ ./ssl-pooch.sh -x
 
 ## Stamin for unreachable endpoints
 
+_choo choose local files..._
+  
 There is a 'pseudo retry' function for whenever an endpoint is found unrechable, it can search for the correlated local certificate on the **_local_certs_path** - controlable by the variable **_seek_local_certs** - which should be true or false. Important to mention that said files should follow a specific naming pattern to be 'seen', that's the same naming convention used when exporting a certificate, like for example:
 
-\* SERVER
+- SERVER
     + server name and port: **google.com 443**
     + local file should be named: **google.com_443.cer**
-\* URL
+- URL
     + URL: **https://google.com/files/certificates/file**
     + local file should be named: **google.com_files_certificates_file.cert**
 
-If that happens, endpoint unreachable AND _seek_local_certs is 'true' AND correlated file found on _local_certs_path, a notation as 'local' will be placed on the line to indicate date was pull from a local file, example:"
+If that happens, endpoint unreachable AND _seek_local_certs is 'true' AND correlated file found on _local_certs_path, a notation as **'local'** will be placed on the line to indicate date was pull from a local file, example:"
 ```
 $ ./ssl-pooch.sh -s google.com
 Host                    | Status  | Expires     | Days
@@ -696,12 +703,39 @@ _custom_mail_signature="<p><span style=\"signature\">A Rocksome SSL Monitoring T
 - sendmail\* When sending email
 - telnet\* For alternative email mechanism
 
+## Run with Docker
+
+I've decided to build its Docker image based a CentOS crontab one, so one can use it to schedule job execution when needed. To run from docker, it will need to work with alternative email mechanism thru telnet - sorry, cant get it much generic if using sendmail.
+
+### Build the Image
+
+```
+TZ="America/Chicago" && docker build --rm --build-arg TZ=$TZ -t ssl-pooch:latest .
+```
+
+- Change the **TZ** variable declaration to match the timezonee you want to run your container on.
+
+### Run the container and execute
+
+```
+docker run -dt --name ssl-pooch ssl-pooch:latest
+```
+
+```
+$ dkex 08a ssl-pooch -s google.com
+Host            | Status  | Expires     | Days
+google.com:443  | Valid   | Oct 4 2021  | 50
+```
+
+### Running from Docker's cron
+
+Bash into the container and edit **/etc/crontab** as needed. If command goes too complex, you may want to create a wrapper script to call it from cron.
+
 ## Tested on
 - MacOS, BigSur 11, GNU bash, version 3.2.57 \*created on
 - RHEL, Maipo 8, GNU bash, version 4.2.46
 - CentOS, Core 7, GNU bash, version 4.2.46
 - Ubuntu, Focal Fossa 20.04 LTS, GNU bash, version 5.0.17
-- Alpine, 3.7.1, GNU bash, version 4.4.19
 
 ## Todo
 - So far, so good, so what?
