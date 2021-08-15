@@ -113,7 +113,7 @@ $ ./ssl-pooch.sh -f LOCAL_CERTIFICATE_FILE
 -f    : Local certificate file path
 ```
 
-- \* PEM certificates and SAML IdP Metadata XML Certificates (probably only useful to me) supported.
+\* PEM certificates and SAML IdP Metadata XML Certificates (probably only useful to me) supported.
 
 ### Example #1 (PEM file)
 ```
@@ -138,7 +138,7 @@ $ ./ssl-pooch.sh -u RESOURCE_URL
 -u    : Resource URL to download the cert from
 ```
 
-- \* PEM certificates and SAML IdP Metadata XML Certificates (probably only useful to me) supported.
+\* PEM certificates and SAML IdP Metadata XML Certificates (probably only useful to me) supported.
 
 ### Example
 ```
@@ -166,7 +166,7 @@ google.com 443
 github.com 443
 ```
 
-- \* You can include local files on list using **FILE** keyword, as:
+\* You can include local files on list using **FILE** keyword, as:
 ```
 CERT_FILE_PATH FILE
 ```
@@ -206,7 +206,7 @@ _separator;Local Files
 /home/user/certs/Entrust_G2_CA.cer FILE
 ```
 
-- \* **_separator** must be written as - **_separator;HEADER_NAME**, example:
+\* **_separator** must be written as - **_separator;HEADER_NAME**, example:
 ```
 _separator;EXTERNAL SITES
 ```
@@ -234,10 +234,10 @@ GOOGLE           | Valid        | Sep 14 2021  | 67
 
 ### Static fields
 
-- \* You can also use static fields on the list file - your own identifiers for example, whatever you need. This is specially useful when you require some 'shape' on a bigger list.
-- \* Static fields are limited to the max of **three(3)** fields - output starts to get ugly.
+\* You can also use static fields on the list file - your own identifiers for example, whatever you need. This is specially useful when you require some 'shape' on a bigger list.
+\* Static fields are limited to the max of **three(3)** fields - output starts to get ugly.
 
-- \* In order to use static fields, you need to define custom variables, as follow:
+\* In order to use static fields, you need to define custom variables, as follow:
     + **_custom_static_fields_pos** : Where to position the fields on the results as **'begin'** or **'end'**
     + **_custom_static_fields_names** : Array containing static fields names to be used on header.
 
@@ -286,8 +286,8 @@ You can also order by two columns, like - order by column A then by column B, ex
 -or1,4  : Sort results in reverse order column number 2, then by column number 4
 ```
 
-- \* Ignored depending on the output type
-- \* Ignored if specified column number is out of bounds, example: used '6' on a run that yields a '5' columns output.
+\* Ignored depending on the output type
+\* Ignored if specified column number is out of bounds, example: used '6' on a run that yields a '5' columns output.
 
 ### Filter results
 ```
@@ -534,17 +534,17 @@ google.com:443  | Valid  | Aug 2 2021  | 57
 
 ### Send results by email
 
-- \* Depends on **sendmail** (not quite, but yest)
+\* Depends on **sendmail** (not quite, but yest)
 ```
 -m     : Send results by email
 ```
 
-- \* Custom variables must be set, as follow:
+\* Custom variables must be set, as follow:
     + **_custom_mail_to** : recipient's email/s. split multiple emails with commas, as: mail1,mail2
     + **_custom_mail_from** : sender's email \* defaults to sslpooch@domain.com
     + **_custom_mail_subject** : email subject
 
-- \* Did I say it **not quite** depends on sendmail? Yep. You can use **telnet** instead, obviously, assuming your mailhost can reply to EHLOs. If you want to use telnet for sending emails instead, you gotta set an additional custom variable:
+\* Did I say it **not quite** depends on sendmail? Yep. You can use **telnet** instead, obviously, assuming your mailhost can reply to EHLOs. If you want to use telnet for sending emails instead, you gotta set an additional custom variable:
     + **_custom_mail_usealtmechanism** : settings for alternative telnet email mechanism; must have true|false, domain.com, mailhost_addr, mailhost_port
     
 Whatever it's first element is set to **true**, it will choose telnet for sending emails. Ex:
@@ -571,7 +571,7 @@ google.com:443  | Valid   | Aug 2 2021  | 56
 ```
 
 Export the endpoint certificate to **PWD/cert_files**
-- \* This is only valid when running against server or URL
+\* This is only valid when running against server or URL
 
 ### Show progress bar when running over a list
 ```
@@ -583,7 +583,7 @@ Export the endpoint certificate to **PWD/cert_files**
 -i     : Send results to instrumentation endpoint
 ```
 
-- \* Custom variables must be set, as follow:
+\* Custom variables must be set, as follow:
     + **_custom_instrumentation_addr** : instrumentation endpoint server/URL
     + **_custom_instrumentation_cmd** : command to be used for metric injection" 
 
