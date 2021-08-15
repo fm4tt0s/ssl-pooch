@@ -152,7 +152,7 @@ URL:mysite.com/download/certfile.cer    | Valid     | Jun 20 2031   | 3650
 $ ./ssl-pooch.sh -l FQDN_LIST_FILE [-o(n)|-F(-)]
 ```
 
-**Execution may look hang when running with a bigger list file, it's not. This is just like bankruptcy law... Don't worry about it. I got this!**
+\* **NOTE**: Execution may look hang when running with a bigger list file, it's not. This is just like bankruptcy law... Don't worry about it. I got this! In case you've have trust issues you can use a (progress bar)[#Show-progress-bar-when-running-over-a-list] to see where this is going.
 
 ### Where
 ```
@@ -191,7 +191,7 @@ google.com:443         | Valid   | Aug 2 2021   | 58
 FILE:Entrust_G2_CA.cer | Valid   | Dec 7 2030   | 3472
 ```
 
-- \*\* As well, you can do exactly the same with **URL** keyword.
+\* As well, you can do exactly the same with **URL** keyword.
 
 ### Separators
 
@@ -211,9 +211,9 @@ _separator;Local Files
 _separator;EXTERNAL SITES
 ```
 
-- \*\* ignored if output type is not [html](#html)
-- \*\* ignored if **[ordering](#Order-results)** OR **[filtering](#Filter-results)** results
-- \*\* ignored if **[header is omitted](#Omit-header)**
+- ignored if output type is not [html](#html)
+- ignored if **[ordering](#Order-results)** OR **[filtering](#Filter-results)** results
+- ignored if **[header is omitted](#Omit-header)**
 
 ### Alternative Labels
 
