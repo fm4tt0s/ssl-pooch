@@ -15,6 +15,7 @@
 - Send results by email
 - Inject results to instrumentation endpoint
 - Ship with Docker
+- Schedule for crontab
 - Bark!
 
 ---
@@ -705,31 +706,40 @@ _custom_mail_signature="<p><span style=\"signature\">A Rocksome SSL Monitoring T
 
 ## Run with Docker
 
-I've decided to build its Docker image based a CentOS crontab one, so one can use it to schedule job execution when needed. To run from docker, it will need to work with alternative email mechanism thru telnet - sorry, cant get it much generic if using sendmail.
+I've decided to build its Docker image based a CentOS crontab one, so one can use it to schedule job execution when needed. To run from docker, it will need to work with alternative email mechanism thru telnet - sorry, cannot make it much generic if using sendmail.
 
-### Build the Image
-
+### Run
 ```
-TZ="America/Chicago" && docker build --rm --build-arg TZ=$TZ -t ssl-pooch:latest .
-```
-
-- Change the **TZ** variable declaration to match the timezonee you want to run your container on.
-
-### Run the container and execute
-
-```
-docker run -dt --name ssl-pooch ssl-pooch:latest
+docker run -dt --name ssl-pooch fmattos/ssl-pooch:latest
 ```
 
+### Execute
 ```
-$ dkex 08a ssl-pooch -s google.com
+$ docker exec -it ssl-pooch ssl-pooch -s google.com
 Host            | Status  | Expires     | Days
 google.com:443  | Valid   | Oct 4 2021  | 50
 ```
 
-### Running from Docker's cron
+### Use with cron
 
-Bash into the container and edit **/etc/crontab** as needed. If command goes too complex, you may want to create a wrapper script to call it from cron.
+First, you may want to update container's TZ to reflect yours, it's shipped with **America/Chicago** by default. 
+
+- Suppose you want to use **America/New_York** as your timezone, so bash into the container
+```
+docker exec -it ssl-pooch bash
+```
+
+- Change localtime to your TZ
+```
+ln -sf /usr/share/zoneinfo/America/New_York /etc/localtime
+```
+
+- Edit crontab file
+```
+vi /etc/crontab
+```
+
+If command goes too complex, many options and arguments for ex, you may want to create a wrapper script to call it from cron to keep it clean and safer. Your call.
 
 ## Tested on
 - MacOS, BigSur 11, GNU bash, version 3.2.57 \*created on
