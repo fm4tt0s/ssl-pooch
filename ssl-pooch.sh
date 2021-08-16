@@ -1926,7 +1926,7 @@ if [[ "${_exportcert}" == "true" && -s "${_cert_temp}" ]]; then
         mv "${_chain_temp}" "${_exportcert}"
     elif [[ "${_export_tag}" == "C" ]]; then
         _exportcert="${_local_certs_path}/${_host}_${_port}"
-        mktemp /tmp/_chain_temp_{1,2,3}.cer 1> /dev/null 2> /dev/null || die 13 "_chain_temp" "write"
+        touch /tmp/_chain_temp_{1,2,3}.cer 1> /dev/null 2> /dev/null || die 13 "_chain_temp" "write"
         awk 'BEGIN { i=1; file="/tmp/_chain_temp_"i".cer" } /BEGIN CERTIFICATE/,/END CERTIFICATE/ { print >file } /END CERTIFICATE/{ i++; file="/tmp/_chain_temp_"i".cer" }' "${_chain_temp}"
         mv /tmp/_chain_temp_1.cer "${_exportcert}_server.cer"
         mv /tmp/_chain_temp_2.cer "${_exportcert}_intermediate.cer"
