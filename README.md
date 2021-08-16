@@ -75,8 +75,8 @@ ssl-pooch (woof-woof) v1.0
       ./ssl-pooch.sh [manual|-v] [-n|-x|-m|-i]
       { [-s HOST -p PORT] | [-f LOCAL_CERTIFICATE_FILE] [-l FQDN_LIST_FILE] [-u RESOURCE_URL] }
       [-t(tty|csv|html|json|cw|wily|dxapm|statsd|prometheus|graphite|esapm)]
-      [-e(issuer,cn,serial)] [-S]
-      [-o/-or(column_number)] [-F/-F-(pattern)] [-O save_to_file]
+      [-e(issuer,cn,serial)] [-S] [-E|c] [-P]
+      [-o/-or(column_number)|(columnA_number,columnB_number)] [-F/-F-(pattern)] [-O save_to_file]
 
  FOR MORE INFO
       ./ssl-pooch.sh manual
@@ -576,6 +576,14 @@ google.com:443  | Valid   | Aug 2 2021  | 56
 Export the endpoint certificate to **PWD/cert_files**
 - This is only valid when running against server or URL
 
+You can also export server certificate chain by using argument 'c' with 'E' option, like:
+```
+$ ./ssl-pooch.sh -s google.com -Ec
+```
+
+Certificate chain will be sabed to **PWD/cert_files** with a **chain** notation on the file name
+- This is only valid when running against a server
+
 ### Show progress bar when running over a list
 
 Meh is it running? I wanna seeeee it...
@@ -657,7 +665,8 @@ Listing all of them et their meaning...
 ### Email Variables
 - **_custom_mail_usealtmechanism**   : use alternative email mechanism thru telnet? if not set, sendmail will be used. to be considered, this var should be set as: "true|false" "domain" "mailhost_addr" "mailhost_port" - obviously only considered if first element is 'true'
 - **_custom_mail_to**    : recipient's email/s. split multi-addr with commas, as: addr1,addr2.
-- **_custom_mail_from**  : sender's email  
+- **_custom_mail_from**  : sender's email
+- **_custom_mail_from_name** : sender's name - if you want to show off - not mandatory
 - **_custom_mail_from_return_path**  : use different return path or reply-to?
 - **_custom_mail_subject   : email subject
 - **_custom_mail_signature : email signature - must use HTML escaped code, example:
@@ -770,6 +779,7 @@ If command goes too complex, many options and arguments for ex, you may want to 
 - 1.3, made possible to use telnet for sending mail - yeah a big makeshift; I needed it since I want to deliver this solution on a docker container, so I dont need to waste much time dealing with postfix/mta/etc. Added a 'wrap' to use a configuration file.
 - 1.4, added SIGINT to timeout, I realized it was often leaving some zombies. added '-E' option for when running against single host or URL to 'Export' the endpoint certficate, spool folder set to _this_path/cert_files. created a pseudo 'retry' for whenever an endpoint is found unreachable, so the script can seek for related local cert on spool folder (_this_path/cert_files), controlable by custom var _seek_local_certs being true or false; important to mention that files should follow a specific naming pattern (more details on the manual), if that happens (endpoint unreachable and local file found), a notation as 'local' will be put on the line to indicate data is gotten from local file. changed the 'order by' functionality so it can accept up to 2 columns to order the results - like, order by a, then b.
 - 1.5, added an option to show progress when running thru a list (-P), silly but some may use it. added a signature variable so it can be used on the end of email body, also silly. removed telnet output from terminal. possibility to change HTML email style by changing _custom_html_style var. improved manual.
+- 1.6, fixed telnet mechanism for multiple rcpt addr. added a 'name' for 'email from'. changed 'export' feature to accept the arg 'c', meaning to download server cert chain.
 
 ## References
 - [SSL](https://www.ssl.com/)

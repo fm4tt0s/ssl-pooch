@@ -5,8 +5,8 @@
 # date      : 07-May-21
 # updated   : 15-Jun-21
 #
-# version   : 1.5
-    _my_version="1.5"
+# version   : 1.6
+    _my_version="1.6"
 # name:     : ssl-pooch [woof-woof]
     _my_name="ssl-pooch [woof-woof]"
 #
@@ -64,6 +64,8 @@
 #   - 1.5, Felipe Mattos, added an option to show progress when running thru a list (-P), silly but some may use it. added a
 #       signature variable so it can be used on the end of email body, also silly. removed telnet output from terminal. 
 #       possibility to change HTML email style by changing _custom_html_style var. improved manual.
+#   - 1.6, Felipe Mattos, fixed telnet mechanism for multiple rcpt addr. added a 'name' for 'email from'. changed 'export' 
+#       feature to accept the arg 'c', meaning to download server cert chain.
 #
 # require   : common sense and...
     _deps=("openssl" "awk" "mktemp" "sed" "column" "fold" "wget" "bc") 
@@ -90,6 +92,8 @@ _custom_mail_usealtmechanism=("false" "company.com" "mailhost.company.com" "25")
 _custom_mail_to="to@mail.com"
 # sender's email
 _custom_mail_from="${_my_name:0:9}@yourdomain.com"
+# sender's name - if you want to show off
+_custom_mail_from_name="${_my_name:0:9}"
 # use different return path / reply-to?
 _custom_mail_from_return_path="${_custom_mail_from}"
 # email subject
@@ -163,6 +167,7 @@ function cleanup() {
     eval "${_rm_cmd}" -f "${_cert_temp}" 
     eval "${_rm_cmd}" -f "${_error_temp}" 
     eval "${_rm_cmd}" -f "${_output_temp}"
+    eval "${_rm_cmd}" -f "${_chain_temp}"
     [[ "${1}" -eq 8 ]] && eval "${_rm_cmd}" -f "${_output_file}"
 }
 
@@ -210,7 +215,7 @@ function manual() {
     echo "  ${0} [manual|-v] [-n|-x|-m|-i]"
     echo "  { [-s HOST -p PORT] | [-f LOCAL_CERTIFICATE_FILE] [-l FQDN_LIST_FILE] [-u RESOURCE_URL] }"
     echo "  [-t(tty|csv|html|json|cw|wily|dxapm|statsd|prometheus|graphite|esapm)]"
-    echo "  [-e(issuer,cn,serial)] [-S] [-E] [-P]"
+    echo "  [-e(issuer,cn,serial)] [-S] [-E|c] [-P]"
     echo "  [-o/-or(column_number)|(columnA_number,columnB_number)] [-F/-F-(pattern)] [-O save_to_file]"
     echo ""
     echo "-----------------------------------------------------------------------------------------------------------------"
@@ -431,7 +436,9 @@ function manual() {
     echo " ${_BOLD_}-O${_NORM_}     : Save results to file ${_BOLD_}*${_NORM_}defaults to stdout"
     echo ""
     echo " ${_BOLD_}-E${_NORM_}     : Export certificatee file to ${_BOLD_}PWD/cert_files${_NORM_}"
+    echo " ${_BOLD_}-Ec${_NORM_}    : Export server certificate chain file to ${_BOLD_}PWD/cert_files${_NORM_}"
     echo "  ${_BOLD_}**${_NORM_} only valid when running against server or URL"
+    echo "  ${_BOLD_}**${_NORM_} chain export is only available when running against server"
     echo ""
     echo " ${_BOLD_}-P${_NORM_}     : Show progress bar when running over a list"
     echo ""
@@ -493,6 +500,7 @@ function manual() {
     echo "      obviously only considered if first element is set to 'true'"
     echo "  ${BOLD}* _custom_mail_to${NORM}                 : recipient's email/s. split addr with commas, as: addr1,addr2."
     echo "  ${BOLD}* _custom_mail_from${NORM}               : sender's email"
+    echo "  ${BOLD}* _custom_mail_from_name${NORM}          : sender's name - if you want to show off"
     echo "  ${BOLD}* _custom_mail_from_return_path${NORM}   : set a different return path and reply-to?"
     echo "  ${BOLD}* _custom_mail_subject                   : email subject"
     echo "  ${BOLD}* _custom_mail_signature                 : email signature, if you want it - must use HTML escaped code, ex:"
@@ -537,7 +545,7 @@ function quickhelp() {
     echo "      ${0} [manual|-v] [-n|-x|-m|-i]"
     echo "      { [-s HOST -p PORT] | [-f LOCAL_CERTIFICATE_FILE] [-l FQDN_LIST_FILE] [-u RESOURCE_URL] }"
     echo "      [-t(tty|csv|html|json|cw|wily|dxapm|statsd|prometheus|graphite|esapm)]"
-    echo "      [-e(issuer,cn,serial)] [-S] [-E] [-P]"
+    echo "      [-e(issuer,cn,serial)] [-S] [-E|c] [-P]"
     echo "      [-o/-or(column_number)|(columnA_number,columnB_number)] [-F/-F-(pattern)] [-O save_to_file]"
     echo ""
     echo " FOR MORE INFO"
@@ -600,7 +608,7 @@ function groundset() {
     fi
 
     # define temp files and touch it
-    _cert_temp=$(mktemp /tmp/"${_this//.sh/}".cert_temp.XXXXXX 2> /dev/null) || die 13 "_cert_temp" "write"
+    _cert_temp=$(mktemp /tmp/"${_this//.sh/}"_cert_temp.XXXXXX 2> /dev/null) || die 13 "_cert_temp" "write"
     _error_temp=$(mktemp /tmp/"${_this//.sh/}"_error_temp.XXXXXX 2> /dev/null) || die 13 "_error_temp" "write"
     _output_temp=$(mktemp /tmp/"${_this//.sh/}"_output_temp.XXXXXX 2> /dev/null) || die 13 "_output_temp" "write"
     touch "${_cert_temp}" "${_error_temp}" "${_output_temp}" 2> /dev/null || die 13 "temp files" "write"
@@ -790,7 +798,7 @@ function htmlshape() {
 function mailshape() {
     # what: just define email headers
     # check if multiple rcpt and make-up the variable
-    _mail_headers="From: ${_my_name} <${_custom_mail_from}>
+    _mail_headers="From: ${_custom_mail_from_name} <${_custom_mail_from}>
 Subject: ${_custom_mail_subject}
 Thread-Topic: ${_custom_mail_subject}
 To: ${_custom_mail_to//,/, }
@@ -1478,11 +1486,25 @@ function servergut() {
     # hard to determine reachable when using proxy so force it
     ! [[ -s "${_cert_temp}" ]] && _res="false"
 
+    # are we exporting chain?
+    if [[ "${_res}" == "true" && "${_export_tag}" == "c" ]]; then
+        _chain_temp=$(mktemp /tmp/"${_this//.sh/}"_chain_temp.XXXXXX 2> /dev/null) || die 13 "_chain_temp" "write"
+        _openssl_options="-showcerts ${_openssl_options}"
+        _opensslCMD="openssl s_client ${_openssl_options} 2> /dev/null | tail -n +4 1> ${_chain_temp}"
+        echo "" | eval "${_opensslCMD}"
+        # sanitize chain temp output
+        # head is clean already, so just find where last cert ends and reap from that point onwards
+        local _end_cert && _end_cert=$(grep -n 'END CERTIFICATE' "${_chain_temp}" | tail -1 | cut -d':' -f1 | bc)
+        sed -n "1,${_end_cert}p" "${_chain_temp}" > "${_chain_temp}.temp" || die 13 "_chain_temp" "write"
+        mv "${_chain_temp}.temp" "${_chain_temp}"
+    fi
+
     if [[ "${_res}" == "false" ]] > /dev/null; then
         if [[ "${_seek_local_certs}" == "true" ]]; then
             _local_cert="${_local_certs_path}/${_host}_${_port}.cer"
             if [[ -f "${_local_cert}" ]]; then
                 _local_notation="true"
+                unset _exportcert
                 filegut "${_local_cert}" "${_addr}" "${_port}"
                 unset _local_notation
             else
@@ -1527,6 +1549,7 @@ function urlgut() {
             _local_cert="${_local_certs_path}/${_host//\//_}.cer"
             if [[ -f "${_local_cert}" ]]; then
                 _local_notation="true"
+                unset _exportcert
                 filegut "${_local_cert}" "URL" "${_host}"
                 unset _local_notation
             else
@@ -1627,7 +1650,7 @@ function filegut() {
 [[ "${1}" == "manual" ]] && manual | less && die 0
 
 # otherwise get command line options/arguments
-while getopts ":mine:SEf:l:t:o:p:s:u:O:F:Pxv" _cmd_option; do
+while getopts ":mine:SE:f:l:t:o:p:s:u:O:F:Pxv" _cmd_option; do
     case "${_cmd_option}" in
         # context type
         # by host
@@ -1690,11 +1713,14 @@ while getopts ":mine:SEf:l:t:o:p:s:u:O:F:Pxv" _cmd_option; do
             ;;
         # misc
         # Export cert to
-        E) _exportcert="true" 
+        E) _exportcert="true"
+            _export_tag="${OPTARG}"
             [[ -n "${_fqdn_file}" || -n "${_certfile}" ]] && die 5
+            ! [[ "${_export_tag}" =~ ^c$ ]] && die 5
             if ! [[ -d "${_local_certs_path}" ]]; then
                 mkdir "${_local_certs_path}" 2> /dev/null || die 13 "_local_certs_path" "write"
             fi
+            [[ "${_export_tag}" == "c" && -n "${_certurl}" ]] && die 5 
             ;;
         # send mail
         m) _shootmail="true"
@@ -1728,7 +1754,18 @@ while getopts ":mine:SEf:l:t:o:p:s:u:O:F:Pxv" _cmd_option; do
         # version
         v) echo "${_my_version}" && die 0 ;;
         # anything else
-        :) quickhelp && die 1;;
+        :) # missing arg
+            # is it on the 'E' optional flag?
+            if [[ "${OPTARG}" == "E" ]]; then
+                _exportcert="true"
+                if ! [[ -d "${_local_certs_path}" ]]; then
+                    mkdir "${_local_certs_path}" 2> /dev/null || die 13 "_local_certs_path" "write"
+                fi
+                continue
+            else
+                quickhelp && die 1
+            fi
+            ;;
         \?) quickhelp && die 1;;
         \*) quickhelp && die 1;;
     esac
@@ -1883,6 +1920,11 @@ fi
 # should we just save the cert? theeeen die.
 if [[ "${_exportcert}" == "true" && -s "${_cert_temp}" ]]; then
     [[ -n "${_certurl}" ]] && _exportcert="${_local_certs_path}/${_host//\//_}.cer" || _exportcert="${_local_certs_path}/${_host}_${_port}.cer"
-    mv "${_cert_temp}" "${_exportcert}"
+    if [[ "${_export_tag}" == "c" ]]; then
+        _exportcert="${_local_certs_path}/${_host}_${_port}_chain.cer"
+        mv "${_chain_temp}" "${_exportcert}"
+    else
+        mv "${_cert_temp}" "${_exportcert}"
+    fi
 fi
 die 0
