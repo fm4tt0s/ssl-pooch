@@ -159,15 +159,17 @@ umask 077
 
 function cleanup() {
     # what: cleanup temp files
+    # arg: exit code of die - optional, if 8 is given clean any output file
     eval "${_rm_cmd}" -f "${_cert_temp}" 
     eval "${_rm_cmd}" -f "${_error_temp}" 
     eval "${_rm_cmd}" -f "${_output_temp}"
+    [[ "${1}" -eq 8 ]] && eval "${_rm_cmd}" -f "${_output_file}"
 }
 
 function die() { 
     # what: don't utter a single word - actually do, if needed based on exit code
     # args: exit_code[1] complimentary_message[2] sometimes[3]
-    cleanup
+    cleanup "${1}"
     case "${1}" in
     # melow
         0) exit "${1}" ;;
@@ -787,10 +789,11 @@ function htmlshape() {
 
 function mailshape() {
     # what: just define email headers
+    # check if multiple rcpt and make-up the variable
     _mail_headers="From: ${_my_name} <${_custom_mail_from}>
 Subject: ${_custom_mail_subject}
 Thread-Topic: ${_custom_mail_subject}
-To: ${_custom_mail_to}
+To: ${_custom_mail_to//,/, }
 CC: 
 Reply-To: ${_custom_mail_from_return_path}
 Return-Path: ${_custom_mail_from_return_path}
@@ -830,12 +833,31 @@ function shout2mail() {
     else
         [[ "${#_custom_mail_usealtmechanism[@]}" -ne 4 ]] && die 3 "email variable"
         # send mail thru telnet instead
-        { sleep 2; echo "ehlo ${_custom_mail_usealtmechanism[1]}"; sleep 2;
-        echo "mail from: ${_custom_mail_from}"; sleep 2; 
-        echo "rcpt to: ${_custom_mail_to}"; sleep 2;
-        echo "data"; sleep 2; 
-        cat "${_output_file}" && echo; sleep 2
-        echo "."; sleep 1; } | telnet "${_custom_mail_usealtmechanism[2]}" "${_custom_mail_usealtmechanism[3]}" 2> /dev/null 1> /dev/null
+        # check if multiple addr are used, if so build a loop out of it
+        if [[ $(echo "${_custom_mail_to}" | grep -c ',' | bc 2>/dev/null) -ne 0 ]]; then
+            _custom_mail_to="${_custom_mail_to//,/ }"
+            local _loop_rcpt="true"
+        fi
+        # cant use the same loop as it's using a subshell
+        if [[ "${_loop_rcpt}" == "true" ]]; then
+            { sleep 2; echo "ehlo ${_custom_mail_usealtmechanism[1]}"; sleep 2;
+            echo "mail from: <${_custom_mail_from}>"; sleep 2; 
+                for _i in $_custom_mail_to; do
+                    echo "rcpt to: <${_i}>"; sleep 2;
+                done
+            echo "data"; sleep 2; 
+            cat "${_output_file}" && echo; sleep 2
+            echo "."; sleep 2;
+            echo "QUIT"; sleep 1; } | telnet "${_custom_mail_usealtmechanism[2]}" "${_custom_mail_usealtmechanism[3]}" 2> /dev/null 1> /dev/null
+        else
+            { sleep 2; echo "ehlo ${_custom_mail_usealtmechanism[1]}"; sleep 2;
+            echo "mail from: <${_custom_mail_from}>"; sleep 2;
+            echo "rcpt to: <${_custom_mail_to}>"; sleep 2;
+            echo "data"; sleep 2; 
+            cat "${_output_file}" && echo; sleep 2
+            echo "."; sleep 2; 
+            echo "QUIT"; sleep 1; } | telnet "${_custom_mail_usealtmechanism[2]}" "${_custom_mail_usealtmechanism[3]}" 2> /dev/null 1> /dev/null
+        fi
     fi
 }
 
