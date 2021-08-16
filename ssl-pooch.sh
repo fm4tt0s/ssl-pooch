@@ -65,10 +65,10 @@
 #       signature variable so it can be used on the end of email body, also silly. removed telnet output from terminal. 
 #       possibility to change HTML email style by changing _custom_html_style var. improved manual.
 #   - 1.6, Felipe Mattos, fixed telnet mechanism for multiple rcpt addr. added a 'name' for 'email from'. changed 'export' 
-#       feature to accept the arg 'c', meaning to download server cert chain.
+#       feature to accept the arg 'c', meaning to download server cert chain in a single file or 'C' to export them in separated files.
 #
 # require   : common sense and...
-    _deps=("openssl" "awk" "mktemp" "sed" "column" "fold" "wget" "bc") 
+    _deps=("openssl" "awk" "mktemp" "sed" "column" "fold" "wget" "bc" "csplit") 
 
 # begin custom vars
 # CUSTOM VARS - change it to match your needs
@@ -215,7 +215,7 @@ function manual() {
     echo "  ${0} [manual|-v] [-n|-x|-m|-i]"
     echo "  { [-s HOST -p PORT] | [-f LOCAL_CERTIFICATE_FILE] [-l FQDN_LIST_FILE] [-u RESOURCE_URL] }"
     echo "  [-t(tty|csv|html|json|cw|wily|dxapm|statsd|prometheus|graphite|esapm)]"
-    echo "  [-e(issuer,cn,serial)] [-S] [-E|c] [-P]"
+    echo "  [-e(issuer,cn,serial)] [-S] [-E|(c|C)] [-P]"
     echo "  [-o/-or(column_number)|(columnA_number,columnB_number)] [-F/-F-(pattern)] [-O save_to_file]"
     echo ""
     echo "-----------------------------------------------------------------------------------------------------------------"
@@ -435,8 +435,9 @@ function manual() {
     echo ""
     echo " ${_BOLD_}-O${_NORM_}     : Save results to file ${_BOLD_}*${_NORM_}defaults to stdout"
     echo ""
-    echo " ${_BOLD_}-E${_NORM_}     : Export certificatee file to ${_BOLD_}PWD/cert_files${_NORM_}"
-    echo " ${_BOLD_}-Ec${_NORM_}    : Export server certificate chain file to ${_BOLD_}PWD/cert_files${_NORM_}"
+    echo " ${_BOLD_}-E${_NORM_}     : Export certificatee to ${_BOLD_}PWD/cert_files${_NORM_}"
+    echo " ${_BOLD_}-Ec${_NORM_}    : Export server certificate chain to ${_BOLD_}PWD/cert_files${_NORM_} on a single file."
+    echo " ${_BOLD_}-Ec${_NORM_}    : Export server certificate chain to ${_BOLD_}PWD/cert_files${_NORM_} on separated files."
     echo "  ${_BOLD_}**${_NORM_} only valid when running against server or URL"
     echo "  ${_BOLD_}**${_NORM_} chain export is only available when running against server"
     echo ""
@@ -545,7 +546,7 @@ function quickhelp() {
     echo "      ${0} [manual|-v] [-n|-x|-m|-i]"
     echo "      { [-s HOST -p PORT] | [-f LOCAL_CERTIFICATE_FILE] [-l FQDN_LIST_FILE] [-u RESOURCE_URL] }"
     echo "      [-t(tty|csv|html|json|cw|wily|dxapm|statsd|prometheus|graphite|esapm)]"
-    echo "      [-e(issuer,cn,serial)] [-S] [-E|c] [-P]"
+    echo "      [-e(issuer,cn,serial)] [-S] [-E|(c|C)] [-P]"
     echo "      [-o/-or(column_number)|(columnA_number,columnB_number)] [-F/-F-(pattern)] [-O save_to_file]"
     echo ""
     echo " FOR MORE INFO"
@@ -1487,7 +1488,7 @@ function servergut() {
     ! [[ -s "${_cert_temp}" ]] && _res="false"
 
     # are we exporting chain?
-    if [[ "${_res}" == "true" && "${_export_tag}" == "c" ]]; then
+    if [[ "${_res}" == "true" && "${_export_tag}" =~ ^(c|C)$ ]]; then
         _chain_temp=$(mktemp /tmp/"${_this//.sh/}"_chain_temp.XXXXXX 2> /dev/null) || die 13 "_chain_temp" "write"
         _openssl_options="-showcerts ${_openssl_options}"
         _opensslCMD="openssl s_client ${_openssl_options} 2> /dev/null | tail -n +4 1> ${_chain_temp}"
@@ -1716,11 +1717,11 @@ while getopts ":mine:SE:f:l:t:o:p:s:u:O:F:Pxv" _cmd_option; do
         E) _exportcert="true"
             _export_tag="${OPTARG}"
             [[ -n "${_fqdn_file}" || -n "${_certfile}" ]] && die 5
-            ! [[ "${_export_tag}" =~ ^c$ ]] && die 5
+            ! [[ "${_export_tag}" =~ ^(c|C)$ ]] && die 5
             if ! [[ -d "${_local_certs_path}" ]]; then
                 mkdir "${_local_certs_path}" 2> /dev/null || die 13 "_local_certs_path" "write"
             fi
-            [[ "${_export_tag}" == "c" && -n "${_certurl}" ]] && die 5 
+            [[ "${_export_tag}" =~ ^(c|C)$ && -n "${_certurl}" ]] && die 5 
             ;;
         # send mail
         m) _shootmail="true"
@@ -1923,7 +1924,15 @@ if [[ "${_exportcert}" == "true" && -s "${_cert_temp}" ]]; then
     if [[ "${_export_tag}" == "c" ]]; then
         _exportcert="${_local_certs_path}/${_host}_${_port}_chain.cer"
         mv "${_chain_temp}" "${_exportcert}"
+    elif [[ "${_export_tag}" == "C" ]]; then
+        _exportcert="${_local_certs_path}/${_host}_${_port}"
+        mktemp /tmp/_chain_temp_{1,2,3}.cer 1> /dev/null 2> /dev/null || die 13 "_chain_temp" "write"
+        awk 'BEGIN { i=1; file="/tmp/_chain_temp_"i".cer" } /BEGIN CERTIFICATE/,/END CERTIFICATE/ { print >file } /END CERTIFICATE/{ i++; file="/tmp/_chain_temp_"i".cer" }' "${_chain_temp}"
+        mv /tmp/_chain_temp_1.cer "${_exportcert}_server.cer"
+        mv /tmp/_chain_temp_2.cer "${_exportcert}_intermediate.cer"
+        mv /tmp/_chain_temp_3.cer "${_exportcert}_root.cer"
     else
+
         mv "${_cert_temp}" "${_exportcert}"
     fi
 fi
