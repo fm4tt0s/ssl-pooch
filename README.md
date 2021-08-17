@@ -10,7 +10,7 @@
 
 ## What
 - Check, scrap and monitor SSL certificates
-- It can be used against host, local file (PEM/SAML IdP Metadata XML), resource URL or thru a list of servers, local files and URLs
+- It can be used against host, local file (PEM/DER/SAML IdP Metadata XML), resource URL or thru a list of servers, local files and URLs
 - Generate several output types <small>(CSV, HTML, JSON, AWS CloudWatch, CA Wily Introscope, Broadcom DXAPM, StatsD (DataDog/Influx), Prometheus and ElasicSearch APM... so far.)</small>
 - Send results by email
 - Inject results to instrumentation endpoint
@@ -116,9 +116,9 @@ $ ./ssl-pooch.sh -f LOCAL_CERTIFICATE_FILE
 -f    : Local certificate file path
 ```
 
-- PEM certificates and SAML IdP Metadata XML Certificates (this last one is probably only useful to me) are supported.
+- PEM and DER certificates, and SAML IdP Metadata XML Certificates (this last one is probably only useful to me) are supported.
 
-### Example #1 (PEM file)
+### Example #1 (PEM or DER file)
 ```
 $ ./ssl-pooch.sh -f ~/Certs/Entrust_G2_CA.cer
 Host                    | Status  | Expires     | Days
@@ -141,7 +141,7 @@ $ ./ssl-pooch.sh -u RESOURCE_URL
 -u    : Resource URL to download the cert from
 ```
 
-- PEM certificates and SAML IdP Metadata XML Certificates (this last one is probably only useful to me) are supported.
+- PEM and DER certificates, and SAML IdP Metadata XML Certificates (this last one is probably only useful to me) are supported.
 
 ### Example
 ```
@@ -176,7 +176,7 @@ CERT_FILE_PATH FILE
 
 ### Example list #2
 ```
-/home/user/certs/cert1.pem FILE
+/home/user/certs/cert1.der FILE
 /home/user/certs/cert2.pem FILE
 ```
 
@@ -785,7 +785,7 @@ If command goes too complex, many options and arguments for ex, you may want to 
 - 1.3, made possible to use telnet for sending mail - yeah a big makeshift; I needed it since I want to deliver this solution on a docker container, so I dont need to waste much time dealing with postfix/mta/etc. Added a 'wrap' to use a configuration file.
 - 1.4, added SIGINT to timeout, I realized it was often leaving some zombies. added '-E' option for when running against single host or URL to 'Export' the endpoint certficate, spool folder set to _this_path/cert_files. created a pseudo 'retry' for whenever an endpoint is found unreachable, so the script can seek for related local cert on spool folder (_this_path/cert_files), controlable by custom var _seek_local_certs being true or false; important to mention that files should follow a specific naming pattern (more details on the manual), if that happens (endpoint unreachable and local file found), a notation as 'local' will be put on the line to indicate data is gotten from local file. changed the 'order by' functionality so it can accept up to 2 columns to order the results - like, order by a, then b.
 - 1.5, added an option to show progress when running thru a list (-P), silly but some may use it. added a signature variable so it can be used on the end of email body, also silly. removed telnet output from terminal. possibility to change HTML email style by changing _custom_html_style var. improved manual.
-- 1.6, fixed telnet mechanism for multiple rcpt addr. added a 'name' for 'email from'. changed 'export' feature to accept the arg 'c', meaning to download server cert chain in a single file or 'C' to export them in separated files.
+- 1.6, fixed telnet mechanism for multiple rcpt addr. added a 'name' for 'email from'. changed 'export' feature to accept the arg 'c', meaning to download server cert chain in a single file or 'C' to export them in separated files. added support to DER files. adder 'subject' as keyword for extra fields, yields to 'cn'.
 
 ## References
 - [SSL](https://www.ssl.com/)

@@ -66,9 +66,10 @@
 #       possibility to change HTML email style by changing _custom_html_style var. improved manual.
 #   - 1.6, Felipe Mattos, fixed telnet mechanism for multiple rcpt addr. added a 'name' for 'email from'. changed 'export' 
 #       feature to accept the arg 'c', meaning to download server cert chain in a single file or 'C' to export them in separated files.
+#       added support to DER files. adder 'subject' as keyword for extra fields, yields to 'cn'.
 #
 # require   : common sense and...
-    _deps=("openssl" "awk" "mktemp" "sed" "column" "fold" "wget" "bc" "csplit") 
+    _deps=("openssl" "awk" "mktemp" "sed" "column" "fold" "wget" "bc" "file") 
 
 # begin custom vars
 # CUSTOM VARS - change it to match your needs
@@ -251,7 +252,7 @@ function manual() {
     echo "  Host                    | Status  | Expires     | Days"
     echo "  FILE:Entrust_G2_CA.cer  | Valid   | Dec 7 2030  | 3472"
     echo ""
-    echo " * PEM and SiteMinder XML Metadata certs are supported"
+    echo " * PEM, DER and SiteMinder XML Metadata certs are supported"
     echo ""
     echo "-----------------------------------------------------------------------------------------------------------------"
     echo " ${_BOLD_}RESOURCE URL${_NORM_}"
@@ -265,7 +266,7 @@ function manual() {
     echo "  Host                        | Status    | Expires       | Days"
     echo "  URL:mysite.com/certfile.cer | Valid     | Jun 20 2031   | 3650"
     echo ""
-    echo " * PEM and SiteMinder XML Metadata certs are supported"
+    echo " * PEM, DER and SiteMinder XML Metadata certs are supported"
     echo ""
     echo "-----------------------------------------------------------------------------------------------------------------"
     echo " ${_BOLD_}LIST${_NORM_}"
@@ -1586,6 +1587,13 @@ function filegut() {
         _certfile="${_cert_temp}"
     fi
 
+    # check if cert is DER, if so convert it
+    if openssl x509 -inform der -in "${_certfile}" -outform pem -out /dev/null 2> /dev/null ; then
+        openssl x509 -inform der -in "${_certfile}" -outform pem -out "${_cert_temp}.PEM"
+        mv "${_cert_temp}.PEM" "${_cert_temp}"
+        _certfile="${_cert_temp}"
+    fi
+
     # check if file is PEM, is readable and higher than 0bytes
     if [[ ! -r "${_certfile}" ]] || [[ ! -s "${_certfile}" ]]; then
         if [[ "${_host}" == "FILE" ]]; then
@@ -1595,6 +1603,7 @@ function filegut() {
         fi
         shout "${_host}" "${_certfile}"  "File not found" "NA" "NA" "NA" "NA" "NA"
         return 0
+    # it all failed
     elif ! openssl x509 -noout -in "${_certfile}" 2> /dev/null; then
         if [[ "${_host}" == "FILE" ]]; then
             _certfile="${_certfile##*/}"
@@ -1646,7 +1655,7 @@ function filegut() {
 # bail if no argument is given
 [[ "${#}" -eq 0 ]] && quickhelp && die 0
 # show manual if invoked
-[[ "${1}" == "manual" ]] && manual | less && die 0
+[[ "${1}" == "manual" ]] && manual | less -r && die 0
 
 # otherwise get command line options/arguments
 while getopts ":mine:SE:f:l:t:o:p:s:u:O:F:Pxv" _cmd_option; do
@@ -1677,9 +1686,10 @@ while getopts ":mine:SE:f:l:t:o:p:s:u:O:F:Pxv" _cmd_option; do
         # extra fields
         e) _extrafields="${OPTARG}"
             [[ "${_outputtype}" =~ ^(cw|wily|dxapm|statsd|prometheus|graphite|esapm)$ ]] && unset _extrafields && continue
-            if echo "${_extrafields}" | sed "s/\,/\n/g" | grep -vE "(^|,)(issuer|cn|serial)($|,)" > /dev/null; then
+            if echo "${_extrafields}" | sed "s/\,/\n/g" | grep -vE "(^|,)(issuer|cn|subject|serial)($|,)" > /dev/null; then
                 die 5
             fi
+            _extrafields="${_extrafields//subject/cn}"
             for i in ${_extrafields//,/ }; do
                 [[ "${i}" == "issuer" ]] && _show_issuer="true" && _extrafields_c=$((_extrafields_c +1))
                 [[ "${i}" == "cn" ]] && _show_cn="true" && _extrafields_c=$((_extrafields_c + 3))
