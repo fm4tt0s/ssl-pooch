@@ -557,7 +557,7 @@ function quickhelp() {
 # check if all good with bash
 [[ -z "${BASH}" || "${BASH_VERSINFO[0]}" -lt 3 ]] && die 3 "bash 3+"
 
-# if interruption is caught, clean-up and exit 127
+# if interruption is caught, clean-up and exit
 trap 'die "8"' INT
 
 function zitheer() {
@@ -626,8 +626,6 @@ function whatsmaprogress {
     # args: start[1] end[2]
     # process data
     ! [[ "${_showprogress}" == "true" ]] && return 0
-    #_progress=$((${2}*100)) && _progress=$((_progress/100))
-    #_progress=$((${1}*100/${2}*100)) && _progress=$((_progress/100))
     _progress=$((${1}*100*100/${2})) && _progress=$((_progress/100))
     _done=$((_progress*4)) && _done=$((_done/10))
     _left=$((40-_done))
