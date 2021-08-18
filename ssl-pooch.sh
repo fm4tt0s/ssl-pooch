@@ -67,7 +67,8 @@
 #   - 1.6, Felipe Mattos, fixed telnet mechanism for multiple rcpt addr. added a 'name' for 'email from'. changed 'export' 
 #       feature to accept the arg 'c', meaning to download server cert chain in a single file or 'C' to export them in separated files.
 #       added support to DER files. adder 'subject' as keyword for extra fields, yields to 'cn'. added '-d' option to dump cert details 
-#       without much data handling (way too ugly but 'H' asked for it - hey 'H', howdy man?)
+#       without much data handling (way too ugly but 'H' asked for it - hey 'H', howdy man?). enhanced fqdnshape, users arre mean and do
+#       weird things.
 #
 # require   : common sense and...
     _deps=("openssl" "awk" "mktemp" "sed" "column" "fold" "wget" "bc" "file") 
@@ -706,6 +707,9 @@ function fqdnshape() {
     fi
     # if above passed, check how many columns the file has
     _fqdn_col_c=$(grep -Ev "(^#|^$|^_separator)" "${_fqdn_file}" | head -1 | awk -F ' ' '{print NF}' | bc)
+
+    # check if there are no EOL spaces
+    [[ $(grep -Ev "(^#|^$|^_separator)" "${_fqdn_file}" | grep -Ec " $" | bc) -ne 0 ]] && die 15 "${_fqdn_file}"
 
     # fqdnfile has to have at least 2 cols and no more than 5
     if [[ "${_fqdn_col_c}" -lt 2 || "${_fqdn_col_c}" -gt 5 ]]; then
@@ -1479,7 +1483,7 @@ function servergut() {
         _openssl_options="-proxy ${_openssl_proxy} ${_openssl_options}"
     fi
 
-    _opensslCMD="openssl s_client ${_openssl_options} 2> ${_error_temp} 1> ${_cert_temp}"
+    _opensslCMD="echo | openssl s_client ${_openssl_options} 2> ${_error_temp} 1> ${_cert_temp}"
 
     # test connection to the endpoint
     _res="true"
@@ -1496,7 +1500,7 @@ function servergut() {
     if [[ "${_res}" == "true" && "${_export_tag}" =~ ^(c|C)$ ]]; then
         _chain_temp=$(mktemp /tmp/"${_this//.sh/}"_chain_temp.XXXXXX 2> /dev/null) || die 13 "_chain_temp" "write"
         _openssl_options="-showcerts ${_openssl_options}"
-        _opensslCMD="openssl s_client ${_openssl_options} 2> /dev/null | tail -n +4 1> ${_chain_temp}"
+        _opensslCMD="echo | openssl s_client ${_openssl_options} 2> /dev/null | tail -n +4 1> ${_chain_temp}"
         echo "" | eval "${_opensslCMD}"
         # sanitize chain temp output
         # head is clean already, so just find where last cert ends and reap from that point onwards
