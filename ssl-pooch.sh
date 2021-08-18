@@ -71,7 +71,7 @@
 #       weird things.
 #
 # require   : common sense and...
-    _deps=("openssl" "awk" "mktemp" "sed" "column" "fold" "wget" "bc" "file") 
+    _deps=("openssl" "awk" "mktemp" "sed" "column" "fold" "wget" "bc") 
 
 # begin custom vars
 # CUSTOM VARS - change it to match your needs
