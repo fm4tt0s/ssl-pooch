@@ -51,6 +51,7 @@
     + [Save restuls to file](#Save-results-to-file)
     + [Export certificate from endpoint](#Export-certificate-from-endpoint)
     + [Show progress bar when running over a list](#Show-progress-bar-when-running-over-a-list)
+    + [Dump certificate info](#Dump-certificate-info)
     + [Inject results to instrumentation endpoint](#Inject-results-to-instrumentation-endpoint)
     + [Debug execution](#Debug-execution)
     + [Show version](#Show-version)
@@ -75,7 +76,7 @@ ssl-pooch (woof-woof) v1.0
       ./ssl-pooch.sh [manual|-v] [-n|-x|-m|-i]
       { [-s HOST -p PORT] | [-f LOCAL_CERTIFICATE_FILE] [-l FQDN_LIST_FILE] [-u RESOURCE_URL] }
       [-t(tty|csv|html|json|cw|wily|dxapm|statsd|prometheus|graphite|esapm)]
-      [-e(issuer,cn,serial)] [-S] [-E|(c|C)] [-P]
+      [-e(issuer,cn,serial)] [-S] [-E|(c|C)] [-d] [-P]
       [-o/-or(column_number)|(columnA_number,columnB_number)] [-F/-F-(pattern)] [-O save_to_file]
 
  FOR MORE INFO
@@ -570,7 +571,7 @@ google.com:443  | Valid   | Aug 2 2021  | 56
 
 ### Export certificate from endpoint
 ```
--E      : Export certificatee file to PWD/cert_files
+-E      : Export certificate file to PWD/cert_files
 ```
 
 Export the endpoint certificate to **PWD/cert_files**
@@ -589,6 +590,34 @@ $ ./ssl-pooch.sh -s google.com -EC
 
 Certificate chain will be sabed to **PWD/cert_files** with a **chain** notation on the file name. In case you've choose to export it on separated files, each one will be indentified by the suffix **server, intermediate or root**
 - This is only valid when running against a server
+
+# Dump certificate info
+
+```
+-d      : Dump certificate 'interesting' info without much data handling
+```
+
+- Only valid when running against a single **FILE**
+- Probably way too **ugly** output
+
+Example:
+```
+$ ./ssl-pooch.sh -f cert_files/google.com_443_server.cer -d
+Certificate: google.com_443_server.cer
+Version: 3 (0x2)
+Serial Number: 01:67:5c:96:87:a5:05:fc:0a:00:00:00:00:f6:ea:cb
+Issuer: C=US, O=Google Trust Services LLC, CN=GTS CA 1C3
+Subject: CN=*.google.com
+
+Valid Not Before: Jul 26 01:37:23 2021 GMT
+Valid Not After : Oct 18 01:37:22 2021 GMT
+
+X509v3 Extended Key Usage: TLS Web Server Authentication
+X509v3 Subject Alternative Name: DNS:*.google.com, DNS:*.appengine.google.com, DNS:*.bdn.dev, DNS:*.cloud.google.com, DNS:*.crowdsource.google.com, DNS:*.datacompute.google.com, DNS:*.google.ca, DNS:*.google.cl, DNS:*.google.co.in, DNS:*.google.co.jp, DNS:*.google.co.uk, DNS:*.google.com.ar, DNS:*.google.com.au, DNS:*.google.com.br, DNS:*.google.com.co, DNS:*.google.com.mx, DNS:*.google.com.tr, DNS:*.google.com.vn, DNS:*.google.de, DNS:*.google.es, DNS:*.google.fr, DNS:*.google.hu, DNS:*.google.it, DNS:*.google.nl, DNS:*.google.pl, DNS:*.google.pt, DNS:*.googleadapis.com, DNS:*.googleapis.cn, DNS:*.googlevideo.com, DNS:*.gstatic.cn, DNS:*.gstatic-cn.com, DNS:*.gstaticcnapps.cn, DNS:googlecnapps.cn, DNS:*.googlecnapps.cn, DNS:gkecnapps.cn, DNS:*.gkecnapps.cn, DNS:googledownloads.cn, DNS:*.googledownloads.cn, DNS:recaptcha.net.cn, DNS:*.recaptcha.net.cn, DNS:widevine.cn, DNS:*.widevine.cn, DNS:ampproject.org.cn, DNS:*.ampproject.org.cn, DNS:ampproject.net.cn, DNS:*.ampproject.net.cn, DNS:google-analytics-cn.com, DNS:*.google-analytics-cn.com, DNS:googleadservices-cn.com, DNS:*.googleadservices-cn.com, DNS:googlevads-cn.com, DNS:*.googlevads-cn.com, DNS:googleapis-cn.com, DNS:*.googleapis-cn.com, DNS:googleoptimize-cn.com, DNS:*.googleoptimize-cn.com, DNS:doubleclick-cn.net, DNS:*.doubleclick-cn.net, DNS:*.fls.doubleclick-cn.net, DNS:*.g.doubleclick-cn.net, DNS:dartsearch-cn.net, DNS:*.dartsearch-cn.net, DNS:googletraveladservices-cn.com, DNS:*.googletraveladservices-cn.com, DNS:googletagservices-cn.com, DNS:*.googletagservices-cn.com, DNS:googletagmanager-cn.com, DNS:*.googletagmanager-cn.com, DNS:googlesyndication-cn.com, DNS:*.googlesyndication-cn.com, DNS:*.safeframe.googlesyndication-cn.com, DNS:app-measurement-cn.com, DNS:*.app-measurement-cn.com, DNS:gvt1-cn.com, DNS:*.gvt1-cn.com, DNS:gvt2-cn.com, DNS:*.gvt2-cn.com, DNS:2mdn-cn.net, DNS:*.2mdn-cn.net, DNS:googleflights-cn.net, DNS:*.googleflights-cn.net, DNS:admob-cn.com, DNS:*.admob-cn.com, DNS:*.gstatic.com, DNS:*.metric.gstatic.com, DNS:*.gvt1.com, DNS:*.gcpcdn.gvt1.com, DNS:*.gvt2.com, DNS:*.gcp.gvt2.com, DNS:*.url.google.com, DNS:*.youtube-nocookie.com, DNS:*.ytimg.com, DNS:android.com, DNS:*.android.com, DNS:*.flash.android.com, DNS:g.cn, DNS:*.g.cn, DNS:g.co, DNS:*.g.co, DNS:goo.gl, DNS:www.goo.gl, DNS:google-analytics.com, DNS:*.google-analytics.com, DNS:google.com, DNS:googlecommerce.com, DNS:*.googlecommerce.com, DNS:ggpht.cn, DNS:*.ggpht.cn, DNS:urchin.com, DNS:*.urchin.com, DNS:youtu.be, DNS:youtube.com, DNS:*.youtube.com, DNS:youtubeeducation.com, DNS:*.youtubeeducation.com, DNS:youtubekids.com, DNS:*.youtubekids.com, DNS:yt.be, DNS:*.yt.be, DNS:android.clients.google.com, DNS:developer.android.google.cn, DNS:developers.android.google.cn, DNS:source.android.google.cn
+
+CRL Distribution Point Full Name: URI:http://crls.pki.goog/gts1c3/zdATt0Ex_Fk.crl
+CRL Authority Information Access: OCSP - URI:http://ocsp.pki.goog/gts1c3
+```
 
 ### Show progress bar when running over a list
 
@@ -785,7 +814,7 @@ If command goes too complex, many options and arguments for ex, you may want to 
 - 1.3, made possible to use telnet for sending mail - yeah a big makeshift; I needed it since I want to deliver this solution on a docker container, so I dont need to waste much time dealing with postfix/mta/etc. Added a 'wrap' to use a configuration file.
 - 1.4, added SIGINT to timeout, I realized it was often leaving some zombies. added '-E' option for when running against single host or URL to 'Export' the endpoint certficate, spool folder set to _this_path/cert_files. created a pseudo 'retry' for whenever an endpoint is found unreachable, so the script can seek for related local cert on spool folder (_this_path/cert_files), controlable by custom var _seek_local_certs being true or false; important to mention that files should follow a specific naming pattern (more details on the manual), if that happens (endpoint unreachable and local file found), a notation as 'local' will be put on the line to indicate data is gotten from local file. changed the 'order by' functionality so it can accept up to 2 columns to order the results - like, order by a, then b.
 - 1.5, added an option to show progress when running thru a list (-P), silly but some may use it. added a signature variable so it can be used on the end of email body, also silly. removed telnet output from terminal. possibility to change HTML email style by changing _custom_html_style var. improved manual.
-- 1.6, fixed telnet mechanism for multiple rcpt addr. added a 'name' for 'email from'. changed 'export' feature to accept the arg 'c', meaning to download server cert chain in a single file or 'C' to export them in separated files. added support to DER files. adder 'subject' as keyword for extra fields, yields to 'cn'.
+- 1.6, fixed telnet mechanism for multiple rcpt addr. added a 'name' for 'email from'. changed 'export' feature to accept the arg 'c', meaning to download server cert chain in a single file or 'C' to export them in separated files. added support to DER files. added 'subject' as keyword for extra fields, yields to 'cn'. added '-d' option to dump cert details without much data handling (way too ugly but 'H' asked for it - hey 'H', howdy man?)
 
 ## References
 - [SSL](https://www.ssl.com/)

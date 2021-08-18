@@ -66,7 +66,8 @@
 #       possibility to change HTML email style by changing _custom_html_style var. improved manual.
 #   - 1.6, Felipe Mattos, fixed telnet mechanism for multiple rcpt addr. added a 'name' for 'email from'. changed 'export' 
 #       feature to accept the arg 'c', meaning to download server cert chain in a single file or 'C' to export them in separated files.
-#       added support to DER files. adder 'subject' as keyword for extra fields, yields to 'cn'.
+#       added support to DER files. adder 'subject' as keyword for extra fields, yields to 'cn'. added '-d' option to dump cert details 
+#       without much data handling (way too ugly but 'H' asked for it - hey 'H', howdy man?)
 #
 # require   : common sense and...
     _deps=("openssl" "awk" "mktemp" "sed" "column" "fold" "wget" "bc" "file") 
@@ -216,7 +217,7 @@ function manual() {
     echo "  ${0} [manual|-v] [-n|-x|-m|-i]"
     echo "  { [-s HOST -p PORT] | [-f LOCAL_CERTIFICATE_FILE] [-l FQDN_LIST_FILE] [-u RESOURCE_URL] }"
     echo "  [-t(tty|csv|html|json|cw|wily|dxapm|statsd|prometheus|graphite|esapm)]"
-    echo "  [-e(issuer,cn,serial)] [-S] [-E|(c|C)] [-P]"
+    echo "  [-e(issuer,cn,serial)] [-S] [-E|(c|C)] [-d] [-P]"
     echo "  [-o/-or(column_number)|(columnA_number,columnB_number)] [-F/-F-(pattern)] [-O save_to_file]"
     echo ""
     echo "-----------------------------------------------------------------------------------------------------------------"
@@ -436,11 +437,14 @@ function manual() {
     echo ""
     echo " ${_BOLD_}-O${_NORM_}     : Save results to file ${_BOLD_}*${_NORM_}defaults to stdout"
     echo ""
-    echo " ${_BOLD_}-E${_NORM_}     : Export certificatee to ${_BOLD_}PWD/cert_files${_NORM_}"
+    echo " ${_BOLD_}-E${_NORM_}     : Export certificate to ${_BOLD_}PWD/cert_files${_NORM_}"
     echo " ${_BOLD_}-Ec${_NORM_}    : Export server certificate chain to ${_BOLD_}PWD/cert_files${_NORM_} on a single file."
     echo " ${_BOLD_}-Ec${_NORM_}    : Export server certificate chain to ${_BOLD_}PWD/cert_files${_NORM_} on separated files."
     echo "  ${_BOLD_}**${_NORM_} only valid when running against server or URL"
     echo "  ${_BOLD_}**${_NORM_} chain export is only available when running against server"
+    echo ""
+    echo " ${_BOLD_}-d${_NORM_}     : Dump certificate 'interesting' info without much data handling"
+    echo "  ${_BOLD_}**${_NORM_} only valid when running against a single FILE"
     echo ""
     echo " ${_BOLD_}-P${_NORM_}     : Show progress bar when running over a list"
     echo ""
@@ -547,7 +551,7 @@ function quickhelp() {
     echo "      ${0} [manual|-v] [-n|-x|-m|-i]"
     echo "      { [-s HOST -p PORT] | [-f LOCAL_CERTIFICATE_FILE] [-l FQDN_LIST_FILE] [-u RESOURCE_URL] }"
     echo "      [-t(tty|csv|html|json|cw|wily|dxapm|statsd|prometheus|graphite|esapm)]"
-    echo "      [-e(issuer,cn,serial)] [-S] [-E|(c|C)] [-P]"
+    echo "      [-e(issuer,cn,serial)] [-S] [-E|(c|C)] [-d] [-P]"
     echo "      [-o/-or(column_number)|(columnA_number,columnB_number)] [-F/-F-(pattern)] [-O save_to_file]"
     echo ""
     echo " FOR MORE INFO"
@@ -1363,6 +1367,8 @@ function myhead() {
     # annnnnd ignore it again and set to true if using wily/influx/datadog/prometheus/etc output
     [[ "${_outputtype}" =~ ^(html|json)$ ]] && _noheader="false"
     [[ "${_outputtype}" =~ ^(cw|wily|dxapm|statsd|prometheus|graphite|esapm)$ ]] && _noheader="true" 
+    # bail if dumping a cert
+    [[ "${_certdump}" == "true" ]] && return 0
     # then finally bail if _noheader is set to true
     [[ "${_noheader}" == "true" ]] && return 0
 
@@ -1584,6 +1590,7 @@ function filegut() {
             fold -w64 "${_cert_temp}" > "${_cert_temp}.fold"
             mv "${_cert_temp}.fold" "${_cert_temp}"
         fi
+        local _saml="${_certfile}"
         _certfile="${_cert_temp}"
     fi
 
@@ -1591,6 +1598,7 @@ function filegut() {
     if openssl x509 -inform der -in "${_certfile}" -outform pem -out /dev/null 2> /dev/null ; then
         openssl x509 -inform der -in "${_certfile}" -outform pem -out "${_cert_temp}.PEM"
         mv "${_cert_temp}.PEM" "${_cert_temp}"
+        local _der="${_certfile}"
         _certfile="${_cert_temp}"
     fi
 
@@ -1611,6 +1619,28 @@ function filegut() {
             _certfile="${_certurl}"
         fi
         shout "${_host}" "${_certfile}" "Invalid Certificate" "NA" "NA" "NA" "NA" "NA"
+        return 0
+    fi
+
+    # is it just a dump?
+    if [[ "${_certdump}" == "true" ]]; then
+        local _certdump_data
+        local _line_data
+        local _needle _needle=("Version:" "Serial Number:" "Issuer:" "Subject:" "Not Before.*" "Not After.*" "X509v3 Extended Key Usage:" "X509v3 Subject Alternative Name:" "Full Name" "Authority Information Access:")
+        openssl x509 -in "${_certfile}" -text -noout 2> /dev/null | sed -e '/:$/N;s/\n//;/: $/N;s/\n//' > "${_cert_temp}.seded"
+        mv "${_cert_temp}.seded" "${_cert_temp}"
+        _certdump_data="Certificate: ${_certfile##*/}\n"
+        [[ -n "${_der}" ]] && _certdump_data="Certificate: ${_der##*/}\n"     
+        [[ -n "${_saml}" ]] && _certdump_data="Certificate: ${_saml##*/}\n"
+           for _i in "${_needle[@]}"; do
+            _line_data=$(grep "${_i}" "${_cert_temp}" | xargs)
+            [[ "${_line_data:0:5}" == "Not B" ]] && _line_data="\nValid ${_line_data}"
+            [[ "${_line_data:0:5}" == "Not A" ]] && _line_data="Valid ${_line_data}\n"
+            [[ "${_line_data:0:9}" == "Full Name" ]] && _line_data="\nCRL Distribution Point ${_line_data}"
+            [[ "${_line_data:0:28}" == "Authority Information Access" ]] && _line_data="CRL ${_line_data}"
+            [[ -n "${_line_data}" ]] && _certdump_data="${_certdump_data}${_line_data}\n"
+        done
+        echo -e "${_certdump_data}" #| sed "s/: /;: /g" | column -t -s';'
         return 0
     fi
 
@@ -1658,7 +1688,7 @@ function filegut() {
 [[ "${1}" == "manual" ]] && manual | less -r && die 0
 
 # otherwise get command line options/arguments
-while getopts ":mine:SE:f:l:t:o:p:s:u:O:F:Pxv" _cmd_option; do
+while getopts ":mine:SdE:f:l:t:o:p:s:u:O:F:Pxv" _cmd_option; do
     case "${_cmd_option}" in
         # context type
         # by host
@@ -1698,6 +1728,9 @@ while getopts ":mine:SE:f:l:t:o:p:s:u:O:F:Pxv" _cmd_option; do
             ;;
         # show SAN
         S) _outputSAN="true"
+            ;;
+        d) _certdump="true"
+            [[ -n "${_outputtype}" || -n "${_fqdn_file}" || -n "${_certurl}" || -n "${_port}" || -n "${_host}" || -n "${_orderby}" || -n "${_filterby}" ]] && die 5
             ;;
         # order by
         o) _orderby="${OPTARG}"
