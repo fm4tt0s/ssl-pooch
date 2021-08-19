@@ -6,7 +6,7 @@ ARG TZ
 ENV TZ ${TZ}
 
 COPY --chown=root:root ./ /ssl-pooch/
-RUN yum install -y crontabs openssl mktemp sed wget bc && \
+RUN yum update -y && yum install -y crontabs openssl mktemp sed wget bc && \
     chmod +x /ssl-pooch/ssl-pooch.sh && \
     chmod +x /ssl-pooch/conf/config.ssl-pooch.env && \
     ln /ssl-pooch/ssl-pooch.sh /usr/bin/ssl-pooch && \
