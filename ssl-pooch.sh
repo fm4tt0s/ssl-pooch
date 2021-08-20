@@ -1804,6 +1804,7 @@ while getopts ":mine:SdE:f:l:t:o:p:s:u:O:F:Pxv" _cmd_option; do
             # is it on the 'E' optional flag?
             if [[ "${OPTARG}" == "E" ]]; then
                 _exportcert="true"
+                [[ -n "${_fqdn_file}" || -n "${_certfile}" ]] && die 5
                 if ! [[ -d "${_local_certs_path}" ]]; then
                     mkdir "${_local_certs_path}" 2> /dev/null || die 13 "_local_certs_path" "write"
                 fi
