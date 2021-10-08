@@ -1677,8 +1677,12 @@ function filegut() {
         # cert is expired
         shout "${_host}" "${_port}" "Expired" "${_certdate}" "${_certdiff}" "${_certissuer}" "${_certcn}" "${_certsn}"
     elif [[ "${_certdiff}" -lt "${_warning_notice}" ]]; then
-        # cert is soon to expire
-        shout "${_host}" "${_port}" "Expiring" "${_certdate}" "${_certdiff}" "${_certissuer}" "${_certcn}" "${_certsn}"
+        # cert is soon to expire or diff equals zero
+        if [[ "${_certdiff}" -ne 0 ]]; then 
+            shout "${_host}" "${_port}" "Expiring" "${_certdate}" "${_certdiff}" "${_certissuer}" "${_certcn}" "${_certsn}"
+        else
+            shout "${_host}" "${_port}" "Expired" "${_certdate}" "${_certdiff}" "${_certissuer}" "${_certcn}" "${_certsn}"
+        fi
     else
         # cert is valid
         shout "${_host}" "${_port}" "Valid" "${_certdate}" "${_certdiff}" "${_certissuer}" "${_certcn}" "${_certsn}"
