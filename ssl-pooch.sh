@@ -1317,7 +1317,7 @@ function tuckdashirt_order() {
         local _sort_cmd
         touch "${_output_temp}.resorted" 2> /dev/null || die 13 "_output_temp.resorted" "write"
         # build sort command - check if reverse order
-        [[ "${_orderby}" =~ ^r ]] && _sort_cmd="sort -t\";\" -k${_orderby/r/} -r" || _sort_cmd="sort -t\";\" -k${_orderby}"
+        [[ "${_orderby}" =~ ^r ]] && _sort_cmd="sort -V -t\";\" -k${_orderby/r/} -r" || _sort_cmd="sort -V -t\";\" -k${_orderby}"
     else
         # now comes the headache - when multiple columns passed for order
         # lets split the var first and check if reverse was used
@@ -1330,9 +1330,9 @@ function tuckdashirt_order() {
         touch "${_output_temp}.resorted" 2> /dev/null || die 13 "_output_temp.resorted" "write"
         # build the ugly sort command
         if [[ "${_reverse}" == "true" ]]; then 
-            _sort_cmd="sort -t\";\" -k${_orderby_a},${_orderby_a} -k${_orderby_b},${_orderby_b} -r"
+            _sort_cmd="sort -V -t\";\" -k${_orderby_a},${_orderby_a} -k${_orderby_b},${_orderby_b} -r"
         else
-            _sort_cmd="sort -t\";\" -k${_orderby_a},${_orderby_a} -k${_orderby_b},${_orderby_b}"
+            _sort_cmd="sort -V -t\";\" -k${_orderby_a},${_orderby_a} -k${_orderby_b},${_orderby_b}"
         fi
     fi
 
